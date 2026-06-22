@@ -44,6 +44,24 @@ export default function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  
+  // Mobile app simulator status states
+  const [currentTime, setCurrentTime] = useState('02:40 PM');
+  const [isProfileDrawerOpen, setIsProfileDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    const updateTime = () => {
+      const d = new Date();
+      let hours = d.getHours();
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12;
+      setCurrentTime(`${hours}:${minutes} ${ampm}`);
+    };
+    updateTime();
+    const timer = setInterval(updateTime, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Connection validation
   const [connectionVerified, setConnectionVerified] = useState(false);
@@ -218,359 +236,499 @@ export default function App() {
   });
 
   return (
-    <div className="min-h-screen bg-[#090b0e] text-slate-100 flex flex-col font-sans transition-colors duration-300 selection:bg-orange-500 selection:text-white">
-      {/* Upper Brand strip / Header */}
-      <header className="sticky top-0 z-30 bg-[#0f1115]/95 backdrop-blur-md border-b border-gray-800/80 px-4 py-3 md:px-8">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+    <div className="min-h-screen bg-[#07080a] text-slate-100 flex flex-col lg:flex-row items-center justify-center font-sans relative overflow-hidden selection:bg-orange-500 selection:text-white">
+      
+      {/* Background radial glowing ambient light effects for desktop previewers */}
+      <div className="absolute top-1/4 left-1/4 -translate-y-1/2 -translate-x-1/2 w-96 h-96 bg-orange-600/10 rounded-full blur-[140px] pointer-events-none hidden lg:block" />
+      <div className="absolute bottom-1/4 right-1/4 translate-y-1/2 translate-x-1/2 w-96 h-96 bg-red-600/10 rounded-full blur-[140px] pointer-events-none hidden lg:block" />
+
+      {/* Hero Welcome Info Panel (Left side on widescreen viewports) */}
+      <div className="hidden lg:flex fixed left-10 xl:left-24 top-1/2 -translate-y-1/2 max-w-sm flex-col space-y-5 text-left z-10">
+        <div className="flex items-center space-x-3">
+          <div className="w-12 h-12 border-2 border-orange-500/40 rounded-2xl overflow-hidden p-0.5 shadow-xl bg-gray-950">
+            <img 
+              src="https://www.image2url.com/r2/default/images/1782122458339-80716311-65c7-48fb-91f5-2ba699bea415.jpg" 
+              alt="HotPic App Logo" 
+              className="w-full h-full object-cover rounded-xl"
+            />
+          </div>
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-orange-400 via-rose-400 to-red-500 bg-clip-text text-transparent">
+              HotPic Elite
+            </h1>
+            <span className="text-[10px] uppercase font-mono tracking-widest text-[#f97316] font-bold block -mt-1">
+              Mobile App Experience
+            </span>
+          </div>
+        </div>
+
+        <p className="text-xs text-gray-400 leading-relaxed max-w-xs">
+          Welcome to the native mobile interface. All features — including tactile categories, photo curation feeds, real-time secure submission trackers, and gatekeeper controls — are optimized for a native touch grid.
+        </p>
+
+        {/* Offline & share checklist specs inside desktop viewer */}
+        <div className="p-4 bg-gray-950/80 border border-gray-800/80 rounded-2xl space-y-3 shadow-lg">
+          <div className="flex items-center space-x-2 text-xs font-semibold text-slate-200">
+            <span className="text-orange-400">⚡</span>
+            <span>Progressive Installation</span>
+          </div>
+          <p className="text-[11px] text-gray-500 leading-normal">
+            To view this app on your physical device, scan the layout on your phone or launch the Sharing Center to distribute via WhatsApp, Telegram, or Xender hotspot setups!
+          </p>
           
-          {/* Logo Brand */}
-          <div className="flex items-center space-x-2.5 cursor-pointer" onClick={() => setActiveTab('gallery')}>
-            <div className="relative w-9 h-9 border border-orange-500/30 rounded-xl overflow-hidden flex items-center justify-center shadow-lg">
-              <img 
-                src="https://www.image2url.com/r2/default/images/1782122458339-80716311-65c7-48fb-91f5-2ba699bea415.jpg" 
-                alt="HotPic Logo" 
-                className="w-full h-full object-cover" 
-                referrerPolicy="no-referrer"
-              />
+          <button 
+            onClick={() => setIsShareModalOpen(true)}
+            className="w-full py-2 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/20 hover:border-orange-500/40 text-[11px] font-bold rounded-xl transition duration-200 cursor-pointer text-orange-400"
+          >
+            Open Distribution Center
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Security Gatekeeper Notice (Right side on ultra-widescreen viewports) */}
+      <div className="hidden xl:flex fixed right-10 xl:right-24 top-1/2 -translate-y-1/2 max-w-xs flex-col space-y-4 text-left z-10">
+        <div className="p-5 bg-gray-950/40 backdrop-blur-md border border-gray-900 rounded-3xl space-y-3 shadow-xl">
+          <div className="flex items-center space-x-1.5 text-[10px] font-black text-rose-400 uppercase tracking-widest">
+            <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse inline-block" />
+            <span>Gatekeeper System Active</span>
+          </div>
+          <p className="text-[11px] text-gray-400 leading-relaxed">
+            All submitted captured feeds are stored securely in cloud-backed databases. System moderation holds standard safety constraints instantly managed by designated administrators.
+          </p>
+          <div className="pt-2 border-t border-gray-900 flex items-center justify-between text-[10px] text-gray-500 font-mono">
+            <span>Server Ingress:</span>
+            <span className="text-emerald-400">Port 3000 (Protected)</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Handheld Smartphone Mock Container */}
+      {/* Resizes perfectly: Full screen natively on true mobile viewports (< lg), styled iPhone chassis on wider desktop displays (lg) */}
+      <div className="w-full h-screen lg:h-[840px] lg:max-h-[92vh] lg:w-[410px] bg-[#090b0e] border-0 lg:border-[10px] lg:border-slate-800/90 lg:rounded-[50px] lg:shadow-[0_24px_70px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.05),0_0_40px_rgba(249,115,22,0.08)] relative overflow-hidden flex flex-col z-20">
+        
+        {/* Physical Camera lens Notch indicator (Only visible on Simulated Desktop Screen Frame) */}
+        <div className="hidden lg:block absolute top-3.5 left-1/2 -translate-x-1/2 w-28 h-5.5 bg-black rounded-full z-40 flex items-center justify-center">
+          <div className="w-2.5 h-2.5 rounded-full bg-[#141416] border border-gray-900 absolute left-3.5" />
+          <div className="w-1 h-1 rounded-full bg-blue-950 absolute right-7" />
+        </div>
+
+        {/* Simulated Native OS Status Bar */}
+        <div className="bg-[#090b0e] h-10 px-6 shrink-0 flex items-center justify-between text-[10px] font-sans font-bold tracking-wide select-none z-30 border-b border-gray-950/60">
+          {/* Hardware Clock */}
+          <span className="text-slate-200">{currentTime}</span>
+          
+          {/* Simulated Notch spacer in desktop window */}
+          <div className="hidden lg:block w-24" />
+
+          {/* Network Connection Indicators */}
+          <div className="flex items-center space-x-1.5 text-slate-300">
+            {/* 5-Bar Signal Level indicator */}
+            <div className="flex items-end space-x-[1.5px]" title="5G Secure Handshake verified">
+              <span className="w-[1.5px] h-1 bg-orange-400 rounded-px"></span>
+              <span className="w-[1.5px] h-1.5 bg-orange-400 rounded-px"></span>
+              <span className="w-[1.5px] h-2 bg-orange-400 rounded-px"></span>
+              <span className="w-[1.5px] h-2.5 bg-orange-500 rounded-px"></span>
+              <span className="w-[1.5px] h-3 bg-red-500 rounded-px"></span>
             </div>
+            <span className="text-[8px] font-mono tracking-tight text-orange-400 font-black">5G</span>
+            
+            {/* Wi-Fi Wave Icon */}
+            <svg className="w-3.5 h-3.5 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.251 14.228c2.073-2.073 5.425-2.073 7.498 0m-9.996-2.498c3.456-3.457 9.061-3.457 12.518 0M3.75 8.25c4.761-4.761 12.48-4.761 17.24 0M12 18.75h.008v.008H12v-.008z" />
+            </svg>
+
+            {/* Battery Cell outline */}
+            <div className="w-5 h-2.5 border border-slate-500 rounded-[3px] p-[1.5px] flex items-center relative">
+              <div className="h-full w-4/5 bg-gradient-to-r from-emerald-500 to-green-400 rounded-[1px]" />
+              <div className="w-[1px] h-1 bg-slate-500 rounded-r-xs absolute -right-[1.5px]" />
+            </div>
+            <span className="text-[8px] font-mono text-slate-400">81%</span>
+          </div>
+        </div>
+
+        {/* Compact Mobile App Header Bar */}
+        <header className="bg-[#0f1115]/90 backdrop-blur-md px-4 py-3 shrink-0 flex items-center justify-between border-b border-gray-900 z-30">
+          <div className="flex items-center space-x-2" onClick={() => setActiveTab('gallery')}>
+            <img 
+              src="https://www.image2url.com/r2/default/images/1782122458339-80716311-65c7-48fb-91f5-2ba699bea415.jpg" 
+              alt="Logo" 
+              className="w-7 h-7 object-cover rounded-lg border border-orange-500/20 shadow"
+            />
             <div>
-              <span className="text-lg font-black tracking-tight bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent font-sans">
+              <span className="text-sm font-black bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">
                 HotPic
               </span>
-              <span className="hidden sm:inline text-[9px] uppercase tracking-widest text-slate-500 font-mono block -mt-1 font-bold">
+              <span className="text-[7.5px] text-orange-500 uppercase tracking-wider block leading-none font-bold">
                 Elite Gallery
               </span>
             </div>
           </div>
 
-          {/* Controller and Navigation Tabs */}
-          <nav className="flex items-center space-x-1">
-            <button
-              onClick={() => setActiveTab('gallery')}
-              className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
-                activeTab === 'gallery' 
-                  ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' 
-                  : 'text-gray-400 hover:text-slate-100'
-              }`}
-            >
-              <LayoutGrid size={13} />
-              <span className="hidden sm:inline">Gallery</span>
-            </button>
-
-            {user && (
-              <>
-                <button
-                  onClick={() => setActiveTab('my-uploads')}
-                  className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
-                    activeTab === 'my-uploads' 
-                      ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' 
-                      : 'text-gray-400 hover:text-slate-100'
-                  }`}
-                >
-                  <BookHeart size={13} />
-                  <span className="hidden sm:inline">My Uploads</span>
-                  {myPics.length > 0 && (
-                    <span className="ml-1 bg-gray-800 text-slate-300 text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
-                      {myPics.length}
-                    </span>
-                  )}
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('upload')}
-                  className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
-                    activeTab === 'upload' 
-                      ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' 
-                      : 'text-gray-400 hover:text-slate-100'
-                  }`}
-                >
-                  <UploadCloud size={13} />
-                  <span className="hidden sm:inline">Upload</span>
-                </button>
-              </>
-            )}
-
-            {/* Moderation board only visible to luckyglobalnews@gmail.com */}
-            {isAdmin && (
-              <button
-                onClick={() => setActiveTab('admin-board')}
-                className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
-                  activeTab === 'admin-board' 
-                    ? 'bg-red-500/10 text-red-400 border border-red-500/20' 
-                    : 'text-yellow-500 hover:text-yellow-400 font-bold bg-yellow-500/5'
-                }`}
-              >
-                <ShieldAlert size={13} />
-                <span>Audit</span>
-              </button>
-            )}
-
-            {/* Unique Share App Integration Trigger */}
-            <button
+          <div className="flex items-center space-x-2">
+            {/* Quick Share app icon trigger */}
+            <button 
               onClick={() => setIsShareModalOpen(true)}
-              className="flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border border-orange-500/30 shadow-sm shadow-orange-500/5"
-              title="Share or Install HotPic PWA"
+              className="p-1.5 rounded-lg bg-gray-950 hover:bg-gray-900 border border-gray-900 text-orange-400 transition cursor-pointer"
+              title="Share app"
             >
-              <Share2 size={13} className="text-orange-400 shrink-0" />
-              <span>Share App</span>
+              <Share2 size={13} />
             </button>
-          </nav>
 
-          {/* User Profile Auth action */}
-          <div className="flex items-center space-x-3">
+            {/* User Profile Avatar / Sign In indicator */}
             {authLoading ? (
-              <Loader2 className="w-4 h-4 text-gray-500 animate-spin" />
+              <Loader2 className="w-4 h-4 text-orange-500 animate-spin" />
             ) : user ? (
-              <div className="flex items-center space-x-2.5">
-                <div className="text-right hidden md:block">
-                  <div className="text-xs font-semibold text-slate-200 truncate max-w-[120px]">
-                    {user.displayName}
-                  </div>
-                  <div className="text-[9px] text-gray-500 font-mono flex items-center justify-end space-x-1">
-                    {isAdmin ? (
-                      <span className="text-red-400 font-semibold uppercase">Administrator</span>
-                    ) : (
-                      <span className="text-gray-400">Contributor</span>
-                    )}
-                  </div>
-                </div>
+              <button 
+                onClick={() => setIsProfileDrawerOpen(true)}
+                className="relative p-0.5 rounded-full border border-orange-500/40 focus:outline-none transition active:scale-95"
+                title="View user profile"
+              >
                 {user.photoURL ? (
-                  <img
-                    src={user.photoURL}
-                    alt={user.displayName || ''}
-                    className="w-8 h-8 rounded-full border border-gray-800"
-                    referrerPolicy="no-referrer"
-                  />
+                  <img src={user.photoURL} alt="Avatar" className="w-6 h-6 rounded-full" referrerPolicy="no-referrer" />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-400 to-red-500 text-white flex items-center justify-center font-bold text-xs uppercase">
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-orange-400 to-red-500 text-white flex items-center justify-center text-[10px] font-bold uppercase">
                     {user.email?.substring(0, 1)}
                   </div>
                 )}
-                <button
-                  onClick={handleSignOut}
-                  className="bg-transparent hover:bg-gray-800 text-gray-400 hover:text-slate-100 p-1.5 rounded-lg transition"
-                  title="Sign Out"
-                >
-                  <LogOut size={16} />
-                </button>
-              </div>
+                {/* Active contributor dot */}
+                <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 border border-slate-950" />
+              </button>
             ) : (
               <button
                 onClick={() => setIsAuthModalOpen(true)}
-                className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-4 py-2 rounded-xl text-xs flex items-center space-x-1.5 cursor-pointer shadow-md shadow-orange-500/10"
+                className="px-2.5 py-1 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg text-[9px] font-bold text-white shadow-md cursor-pointer transition hover:scale-[1.02] active:scale-95"
               >
-                <span>Sign In / Create Account</span>
+                Sign In
               </button>
             )}
           </div>
+        </header>
 
-        </div>
-      </header>
-
-      {/* Hero Accent Strip */}
-      <div className="bg-gradient-to-b from-[#111319] to-transparent py-8 px-4 md:px-8 border-b border-gray-900">
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="space-y-1">
-            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-100 tracking-tight flex items-center space-x-2">
-              <span>Aesthetic Captures</span>
-              <span className="text-lg">✨</span>
-            </h1>
-            <p className="text-xs text-gray-400 max-w-xl leading-relaxed">
-              An elegant board of community curated photography. Join us by signing in, posting your best raw captures, and sharing/installing the application onto your phone screen for instant accessibility!
-            </p>
-          </div>
+        {/* Interactive Scrolling Container Area for Tabs Content */}
+        <main className="flex-1 overflow-y-auto scrollbar-none pb-24 bg-[#090b0e] flex flex-col">
           
-          {/* Permanent interactive share card or Admin strip */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 shrink-0">
-            {user && isAdmin && (
-              <div className="bg-red-500/10 border border-red-500/20 px-4 py-3 rounded-xl flex items-center space-x-3 font-sans">
-                <span className="text-rose-400 text-xs font-bold font-mono">🔧 AUDITING PRIVILEGES ENFORCED</span>
+          {/* Guest lock message details if unauthorized to view tracker/upload */}
+          {!user && activeTab !== 'gallery' && (
+            <div className="px-5 py-12 text-center my-auto space-y-5">
+              <div className="w-16 h-16 bg-gradient-to-b from-gray-900 to-transparent border border-gray-800 rounded-full flex items-center justify-center mx-auto text-2xl shadow-lg">
+                🔒
               </div>
-            )}
-            
-            <div className="bg-[#0f1115] border border-orange-500/20 p-4 rounded-xl flex items-center justify-between gap-4 max-w-sm">
-              <div className="space-y-0.5">
-                <div className="text-xs font-black text-slate-200 flex items-center gap-1.5 leading-none">
-                  <span className="flex h-2 w-2 relative shrink-0">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-                  </span>
-                  <span>Install App & Share</span>
-                </div>
-                <p className="text-[10px] text-gray-400 leading-normal mt-1">
-                  Offline-ready. Direct WhatsApp, Telegram, and Xender sharing profiles!
+              <div className="space-y-1.5">
+                <h3 className="text-sm font-bold text-slate-100">Contribution Center Locked</h3>
+                <p className="text-[11px] text-gray-500 leading-relaxed max-w-xs mx-auto">
+                  Sign in with your verification account to post beautiful captures, vote on categories, use seed presets, and monitor submission pipelines in real-time.
                 </p>
               </div>
               <button
-                onClick={() => setIsShareModalOpen(true)}
-                className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shrink-0 text-white font-bold py-2 px-3 tracking-wide rounded-lg text-[10px] transition cursor-pointer shadow-md shadow-orange-500/10"
+                onClick={() => setIsAuthModalOpen(true)}
+                className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl text-xs font-bold shadow-md shadow-orange-500/10 hover:scale-[1.01] active:scale-95 cursor-pointer transition"
               >
-                Launch Center
+                Sign In / Authenticate Now
               </button>
             </div>
-          </div>
+          )}
 
-        </div>
-      </div>
-
-      {/* Main Container Workspace */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-8 space-y-6">
-
-        {/* Auth prompt if logged out and looking at non-gallery tabs */}
-        {!user && activeTab !== 'gallery' && (
-          <div className="max-w-md mx-auto text-center py-16 px-6 bg-gray-900 border border-gray-800 rounded-2xl shadow-xl space-y-4">
-            <div className="text-4xl text-orange-400">🔒</div>
-            <h2 className="text-lg font-semibold text-slate-100">Secure Space Locked</h2>
-            <p className="text-xs text-gray-400 leading-relaxed">
-              You must sign in with your account to upload photos, track your submissions, and unlock interaction points.
-            </p>
-            <button
-              onClick={() => setIsAuthModalOpen(true)}
-              className="bg-gradient-to-r from-orange-500 to-red-500 text-white py-2.5 px-6 rounded-xl text-xs font-semibold cursor-pointer transition hover:scale-102"
-            >
-              Sign In / Register now
-            </button>
-          </div>
-        )}
-
-        {/* Tab 1: Approved Gallery */}
-        {activeTab === 'gallery' && (
-          <div className="space-y-6">
-            
-            {/* Search & Categories filtering block */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0f1115] border border-gray-800/80 p-4 rounded-xl">
+          {/* Active Tab Area: Gallery Feeds */}
+          {activeTab === 'gallery' && (
+            <div className="p-4 space-y-4">
               
-              {/* Category select list */}
-              <div className="flex items-center space-x-2 overflow-x-auto py-1 scrollbar-none scroll-smooth">
-                <Filter size={14} className="text-gray-500 shrink-0" />
-                {CATEGORIES.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition shrink-0 ${
-                      selectedCategory === cat
-                        ? 'bg-orange-500 text-white shadow-sm'
-                        : 'bg-gray-800 text-gray-400 hover:text-slate-200'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
+              {/* Interactive Small Welcome Banner Inside the Phone Device */}
+              <div className="p-3.5 bg-[#0f1115] border border-gray-900 rounded-2xl relative overflow-hidden space-y-1 shadow-sm">
+                <div className="flex items-center space-x-1 text-[10px] font-extrabold text-orange-400 uppercase tracking-widest leading-none">
+                  <span>★ Community Curation Board</span>
+                </div>
+                <p className="text-[10px] text-gray-400 leading-normal">
+                  Posting raw captures, aesthetic cyberpunk frames, and scrolling unique premium artwork. Direct installation supported!
+                </p>
               </div>
 
-              {/* Search bar */}
-              <div className="relative max-w-xs w-full">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-                <input
-                  type="text"
-                  placeholder="Search titles, authors..."
-                  className="w-full bg-gray-950 border border-gray-800 rounded-lg pl-9 pr-4 py-2 text-xs focus:outline-none focus:border-orange-500 font-sans"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+              {/* Filtering Controls: Compact Category Slider */}
+              <div className="space-y-2">
+                <div className="flex items-center space-x-1.5 overflow-x-auto py-1 scrollbar-none">
+                  {CATEGORIES.map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-3 py-1.5 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
+                        selectedCategory === cat
+                          ? 'bg-orange-500 text-white shadow-md shadow-orange-500/10'
+                          : 'bg-[#0f1115] border border-gray-900 text-gray-400 hover:text-slate-200'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Compact Search Bar */}
+                <div className="relative w-full">
+                  <Search size={12} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+                  <input
+                    type="text"
+                    placeholder="Search captures, tag, or author..."
+                    className="w-full bg-gray-950/80 border border-gray-900 rounded-xl pl-9 pr-4 py-2 text-[11px] text-slate-200 focus:outline-none focus:border-orange-500 placeholder:text-gray-600 transition"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Feed Content */}
+              {picsLoading ? (
+                <div className="flex flex-col items-center justify-center py-20">
+                  <Loader2 className="w-7 h-7 text-orange-500 animate-spin mb-3" />
+                  <span className="text-[10px] font-mono text-gray-500">Loading curation boards...</span>
+                </div>
+              ) : filteredPics.length === 0 ? (
+                <div className="text-center py-16 bg-[#0f1115] border border-dashed border-gray-900 rounded-2xl">
+                  <span className="text-2xl block mb-2">🏜️</span>
+                  <p className="text-[11px] font-bold text-slate-400">No Captures Match</p>
+                  <p className="text-[10px] text-gray-600 mt-1">Try searching a different tag or submit your own shot!</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3.5">
+                  {filteredPics.map((pic) => (
+                    <PicCard
+                      key={pic.id}
+                      pic={pic}
+                      currentUserUid={user ? user.uid : null}
+                      isAdmin={isAdmin}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Active Tab Area: User Submissions Tracker */}
+          {user && activeTab === 'my-uploads' && (
+            <div className="p-4 space-y-4">
+              <div className="border-b border-gray-900 pb-2">
+                <h3 className="text-xs font-black uppercase text-slate-300 tracking-wider">My Submissions Tracker</h3>
+                <p className="text-[10px] text-gray-500 mt-0.5">
+                  Track approved photos and draft files in queue moderation.
+                </p>
+              </div>
+
+              {myPics.length === 0 ? (
+                <div className="text-center py-12 bg-[#0f1115] border border-gray-900 rounded-2xl space-y-3">
+                  <p className="text-[11px] text-gray-500">You haven't submitted any Captures yet.</p>
+                  <button
+                    onClick={() => setActiveTab('upload')}
+                    className="bg-gray-900 hover:bg-gray-800 border border-gray-800 text-orange-400 px-4 py-1.5 rounded-lg text-[10px] font-bold transition cursor-pointer"
+                  >
+                    Submit Custom Pic
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3.5">
+                  {myPics.map((pic) => (
+                    <PicCard
+                      key={pic.id}
+                      pic={pic}
+                      currentUserUid={user.uid}
+                      isAdmin={isAdmin}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Active Tab Area: Image Upload Panel */}
+          {user && activeTab === 'upload' && (
+            <div className="p-4 space-y-3">
+              <div className="text-center pb-2 border-b border-gray-900">
+                <h3 className="text-xs font-black uppercase text-slate-300 tracking-wider">Submit Capture</h3>
+                <p className="text-[9.5px] text-gray-500 mt-0.5">
+                  Publish high-definition presets or generate customized content seeds!
+                </p>
+              </div>
+              
+              <div className="bg-[#090b0e] rounded-xl">
+                <AddPicForm 
+                  user={user} 
+                  isAdmin={isAdmin} 
+                  onSuccess={() => {
+                    setTimeout(() => {
+                      setActiveTab(isAdmin ? 'gallery' : 'my-uploads');
+                    }, 1200);
+                  }}
                 />
               </div>
-
             </div>
+          )}
 
-            {/* Picture Grid list */}
-            {picsLoading ? (
-              <div className="flex flex-col items-center justify-center py-24">
-                <Loader2 className="w-8 h-8 text-orange-500 animate-spin mb-4" />
-                <span className="text-sm font-mono text-gray-400">Loading gallery boards...</span>
+          {/* Active Tab Area: Moderator Verification Queue Board */}
+          {user && isAdmin && activeTab === 'admin-board' && (
+            <div className="p-4 space-y-4">
+              <div className="border-b border-red-500/20 pb-2">
+                <div className="flex items-center space-x-1.5">
+                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-ping" />
+                  <h3 className="text-xs font-black uppercase text-red-400 tracking-wider">Audit Queue Command</h3>
+                </div>
+                <p className="text-[10px] text-gray-500 mt-0.5">
+                  Immediate security validation access for luckyglobalnews@gmail.com
+                </p>
               </div>
-            ) : filteredPics.length === 0 ? (
-              <div className="text-center py-20 bg-gray-900 border border-dashed border-gray-800 rounded-2xl">
-                <span className="text-3xl">🏜️</span>
-                <p className="text-sm font-semibold text-slate-300 mt-2">No Approved Pics Found</p>
-                <p className="text-xs text-gray-500 mt-1">Be the first to upload an aesthetic shot!</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredPics.map((pic) => (
-                  <PicCard
-                    key={pic.id}
-                    pic={pic}
-                    currentUserUid={user ? user.uid : null}
-                    isAdmin={isAdmin}
-                  />
-                ))}
-              </div>
+              <ModeratorQueue adminUid={user.uid} />
+            </div>
+          )}
+
+        </main>
+
+        {/* Tactical Bottom Mobile Navigation Bar inside Simulated Screen */}
+        <nav className="absolute bottom-0 left-0 right-0 bg-[#0f1115]/95 backdrop-blur-md border-t border-gray-900 px-3 py-1.5 z-30 flex items-center justify-around select-none">
+          
+          {/* Gallery Button */}
+          <button
+            onClick={() => setActiveTab('gallery')}
+            className={`flex flex-col items-center justify-center py-1 px-3.5 rounded-xl transition duration-150 relative cursor-pointer ${
+              activeTab === 'gallery' ? 'text-orange-400 font-bold' : 'text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            <LayoutGrid size={15} className="mb-0.5" />
+            <span className="text-[8.5px] tracking-tight">Gallery</span>
+          </button>
+
+          {/* Highlight Upload central Action Trigger */}
+          <button
+            onClick={() => {
+              if (!user) {
+                setIsAuthModalOpen(true);
+              } else {
+                setActiveTab('upload');
+              }
+            }}
+            className={`flex flex-col items-center justify-center -translate-y-2 cursor-pointer w-11 h-11 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold transition shadow-lg shadow-orange-500/30 hover:scale-105 active:scale-95 z-40 ${
+              activeTab === 'upload' ? 'ring-2 ring-orange-400 ring-offset-2 ring-offset-[#0f1115]' : ''
+            }`}
+          >
+            <UploadCloud size={16} />
+          </button>
+
+          {/* Tracker Button */}
+          <button
+            onClick={() => {
+              if (!user) {
+                setIsAuthModalOpen(true);
+              } else {
+                setActiveTab('my-uploads');
+              }
+            }}
+            className={`flex flex-col items-center justify-center py-1 px-3.5 rounded-xl transition duration-150 relative cursor-pointer ${
+              activeTab === 'my-uploads' ? 'text-orange-400 font-bold' : 'text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            <BookHeart size={15} className="mb-0.5" />
+            <span className="text-[8.5px] tracking-tight">My Submissions</span>
+            
+            {user && myPics.length > 0 && (
+              <span className="absolute top-0 right-2 bg-orange-500 text-white text-[8px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center border border-slate-950 scale-90">
+                {myPics.length}
+              </span>
             )}
+          </button>
 
-          </div>
-        )}
+          {/* Optional Gatekeeper Board Trigger (Only visible to Admin) */}
+          {isAdmin && (
+            <button
+              onClick={() => setActiveTab('admin-board')}
+              className={`flex flex-col items-center justify-center py-1 px-3.5 rounded-xl transition duration-150 relative cursor-pointer ${
+                activeTab === 'admin-board' ? 'text-red-400 font-bold' : 'text-yellow-500/60 hover:text-yellow-400'
+              }`}
+            >
+              <ShieldAlert size={15} className="mb-0.5" />
+              <span className="text-[8.5px] tracking-tight">Audit</span>
+            </button>
+          )}
 
-        {/* Tab 2: User drafts/uploads tracking */}
-        {user && activeTab === 'my-uploads' && (
-          <div className="space-y-6">
-            <div className="pb-4 border-b border-gray-800">
-              <h2 className="text-lg font-semibold text-slate-100">My Submissions Tracker</h2>
-              <p className="text-xs text-gray-400 mt-0.5">
-                Review your uploaded photos and monitor their status within the moderator queue.
-              </p>
-            </div>
+        </nav>
 
-            {myPics.length === 0 ? (
-              <div className="text-center py-16 bg-gray-900 border border-gray-800 rounded-xl space-y-3">
-                <p className="text-sm text-gray-400">You haven't posted any photos yet.</p>
+        {/* Simulated iOS/Android Bottom Home Indicator Line Bar */}
+        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-28 h-1 bg-gray-800 rounded-full z-45 pointer-events-none hidden lg:block" />
+
+        {/* Mobile Settings Drawer Sheet (Bottom Sheet Trigger when clicking user avatar) */}
+        {isProfileDrawerOpen && user && (
+          <div className="absolute inset-0 z-50 bg-black/70 backdrop-blur-sm flex flex-col justify-end">
+            {/* Click-away backdrop dismiss container */}
+            <div className="absolute inset-0 -z-10" onClick={() => setIsProfileDrawerOpen(false)} />
+            
+            {/* Physical Drawer Sheet Content */}
+            <div className="w-full bg-[#0f1115] border-t border-gray-800 rounded-t-[32px] p-6 space-y-5 shadow-2xl relative">
+              
+              {/* Bezel Pull line accent */}
+              <div className="w-10 h-1 bg-gray-800 rounded-full mx-auto mb-1 pointer-events-none" />
+
+              {/* Profile Overview */}
+              <div className="flex items-center space-x-3.5">
+                {user.photoURL ? (
+                  <img src={user.photoURL} alt="Avatar" className="w-12 h-12 rounded-full border-2 border-orange-500/20" referrerPolicy="no-referrer" />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-orange-400 to-red-500 text-white flex items-center justify-center font-black text-sm uppercase">
+                    {user.email?.substring(0, 1)}
+                  </div>
+                )}
+                <div>
+                  <h4 className="text-sm font-bold text-slate-100">{user.displayName || 'Contributor Account'}</h4>
+                  <p className="text-[10px] text-gray-500">{user.email}</p>
+                </div>
+              </div>
+
+              {/* Stats & Actions */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-gray-950 rounded-2xl text-center space-y-0.5 border border-gray-900">
+                  <span className="text-[10px] text-gray-500 uppercase block font-bold font-mono tracking-wider">Aesthetic Uploads</span>
+                  <span className="text-lg font-black text-orange-400">{myPics.length} posts</span>
+                </div>
+                <div className="p-3 bg-gray-950 rounded-2xl text-center space-y-0.5 border border-gray-900">
+                  <span className="text-[10px] text-gray-500 uppercase block font-bold font-mono tracking-wider">Account Role</span>
+                  <span className="text-xs font-bold text-slate-300 block pt-1">
+                    {isAdmin ? '🛡️ Administrator' : '✨ Contributor'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Action Lists */}
+              <div className="space-y-2 pt-2">
+                
+                {/* Instant share launcher */}
                 <button
-                  onClick={() => setActiveTab('upload')}
-                  className="bg-gray-800 hover:bg-gray-700 text-slate-200 px-4 py-2 rounded-lg text-xs font-semibold"
+                  onClick={() => {
+                    setIsProfileDrawerOpen(false);
+                    setIsShareModalOpen(true);
+                  }}
+                  className="w-full py-2.5 px-4 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 rounded-xl text-xs font-semibold flex items-center justify-between transition cursor-pointer"
                 >
-                  Create First Upload
+                  <span>Share App Setup / Send link</span>
+                  <span>➜</span>
+                </button>
+
+                {/* Secure Sign Out Button */}
+                <button
+                  onClick={async () => {
+                    setIsProfileDrawerOpen(false);
+                    await handleSignOut();
+                  }}
+                  className="w-full py-2.5 px-4 bg-transparent hover:bg-slate-900 border border-gray-900 text-gray-400 hover:text-rose-400 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 cursor-pointer"
+                >
+                  <LogOut size={13} />
+                  <span>Logout Contributor Session</span>
+                </button>
+
+                <button
+                  onClick={() => setIsProfileDrawerOpen(false)}
+                  className="w-full py-2 px-4 bg-gray-950 hover:bg-gray-900 text-slate-400 text-[10.5px] rounded-xl text-center font-bold tracking-wide transition cursor-pointer"
+                >
+                  Close Settings Panel
                 </button>
               </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {myPics.map((pic) => (
-                  <PicCard
-                    key={pic.id}
-                    pic={pic}
-                    currentUserUid={user.uid}
-                    isAdmin={isAdmin}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
 
-        {/* Tab 3: Upload panel form */}
-        {user && activeTab === 'upload' && (
-          <div className="space-y-4">
-            <div className="pb-2 border-b border-gray-800 text-center max-w-xl mx-auto">
-              <h2 className="text-lg font-semibold text-slate-100">Submit Capture</h2>
-              <p className="text-xs text-gray-400 mt-0.5">
-                Select from our curated high-definition stock presets or roll custom seed generations!
-              </p>
             </div>
-            <AddPicForm 
-              user={user} 
-              isAdmin={isAdmin} 
-              onSuccess={() => {
-                // Return to gallery or my-uploads so they see their capture
-                setTimeout(() => {
-                  setActiveTab(isAdmin ? 'gallery' : 'my-uploads');
-                }, 1500);
-              }}
-            />
           </div>
         )}
 
-        {/* Tab 4: Mod Board */}
-        {user && isAdmin && activeTab === 'admin-board' && (
-          <ModeratorQueue adminUid={user.uid} />
-        )}
-
-      </main>
-
-      {/* Humble styling Footer */}
-      <footer className="bg-[#0b0c10] border-t border-gray-900 py-6 text-center text-xs text-gray-600 font-mono tracking-tight mt-12">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-2">
-          <span>🛡️ HotPic Secure Gatekeeper moderated. Powered by Google Cloud Run.</span>
-          <span>© 2026 HotPic. Developed for secure client environments.</span>
-        </div>
-      </footer>
+      </div>
 
       {/* Elegant overlay AuthModal */}
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
