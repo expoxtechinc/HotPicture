@@ -200,8 +200,13 @@ export default function App() {
           
           {/* Logo Brand */}
           <div className="flex items-center space-x-2.5 cursor-pointer" onClick={() => setActiveTab('gallery')}>
-            <div className="relative w-9 h-9 bg-gradient-to-tr from-orange-500 to-red-500 rounded-xl flex items-center justify-center text-white shadow-lg overflow-hidden animate-pulse">
-              <Flame size={20} className="fill-current rotate-6" />
+            <div className="relative w-9 h-9 border border-orange-500/30 rounded-xl overflow-hidden flex items-center justify-center shadow-lg">
+              <img 
+                src="https://www.image2url.com/r2/default/images/1782122458339-80716311-65c7-48fb-91f5-2ba699bea415.jpg" 
+                alt="HotPic Logo" 
+                className="w-full h-full object-cover" 
+                referrerPolicy="no-referrer"
+              />
             </div>
             <div>
               <span className="text-lg font-black tracking-tight bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent font-sans">
