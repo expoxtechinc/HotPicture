@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { db, OperationType, handleFirestoreError } from '../firebase';
 import { doc, deleteDoc, writeBatch, serverTimestamp, onSnapshot } from 'firebase/firestore';
 import { Picture } from '../types';
-import { Heart, Trash2, Calendar, User, X, Download, Share2, ZoomIn, ZoomOut, Award, BookOpen } from 'lucide-react';
+import { Heart, Trash2, Calendar, User, X, Download, Share2, ZoomIn, ZoomOut, Award, Eye } from 'lucide-react';
 
 interface PicCardProps {
   pic: Picture;
@@ -53,7 +53,7 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
 
   const handleLikeToggle = async () => {
     if (!currentUserUid) {
-      alert('Sign in to upvote and interact with school updates!');
+      alert('Sign in to like and interact with premium photos!');
       return;
     }
     if (loadingLike) return;
@@ -90,7 +90,7 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this school post permanently?')) {
+    if (!confirm('Are you sure you want to delete this picture permanently?')) {
       return;
     }
 
@@ -148,15 +148,15 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
 
             {/* Tap zoom overlay */}
             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-              <span className="px-3 py-1.5 bg-black/85 rounded-xl text-[9px] font-bold text-slate-200 border border-gray-900 select-none">
-                🔍 Click to View Full Details
+              <span className="px-3 py-1.5 bg-black/85 rounded-xl text-[9px] font-bold text-slate-200 border border-gray-900 select-none flex items-center gap-1">
+                <Eye size={10} className="text-orange-400" /> Click to Zoom
               </span>
             </div>
 
-            {/* Pending & Rejected Indicator admin systems */}
+            {/* Pending & Rejected Indicator for moderation */}
             {pic.status === 'pending' && (
               <span className="absolute top-3 right-3 bg-yellow-500/10 backdrop-blur-md text-yellow-400 border border-yellow-500/35 rounded px-2 py-0.5 text-[8.5px] font-sans font-black uppercase tracking-wider">
-                Pending Staff Review
+                Pending Moderation
               </span>
             )}
             {pic.status === 'rejected' && (
@@ -183,7 +183,7 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
                     handleDelete();
                   }}
                   className="text-gray-500 hover:text-rose-500 p-1 rounded-md hover:bg-gray-950 transition cursor-pointer"
-                  title="Remove Post"
+                  title="Remove Picture"
                 >
                   <Trash2 size={13} />
                 </button>
@@ -191,7 +191,7 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
             </div>
 
             <p className="text-[10.5px] text-gray-400 leading-relaxed font-sans line-clamp-2">
-              {pic.description || 'No additional description provided for this campus update.'}
+              {pic.description || 'No additional description provided for this perspective photograph.'}
             </p>
           </div>
         </div>
@@ -205,8 +205,8 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
                 {pic.uploaderName}
               </span>
               {pic.uploaderRole === 'admin' && (
-                <span className="bg-orange-500/10 text-orange-400 border border-orange-500/20 text-[7px] font-mono rounded px-1 shrink-0 font-bold uppercase">
-                  Staff
+                <span className="bg-red-500/10 text-rose-400 border border-rose-500/20 text-[7px] font-mono rounded px-1 shrink-0 font-bold uppercase">
+                  Admin
                 </span>
               )}
             </div>
@@ -251,14 +251,14 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
           >
             <div className="flex items-center space-x-3 max-w-[65%]">
               <div className="w-8 h-8 rounded-lg overflow-hidden bg-gray-950 flex items-center justify-center text-[10px] font-mono font-black text-orange-400 border border-orange-500/30 shrink-0 select-none">
-                {pic.category ? pic.category.substring(0, 2).toUpperCase() : 'MI'}
+                HP
               </div>
               <div className="min-w-0">
                 <h4 className="text-slate-100 font-black text-xs md:text-sm tracking-tight truncate leading-tight">
                   {pic.title}
                 </h4>
                 <span className="text-[9px] text-orange-400 block mt-0.5 truncate uppercase tracking-wider font-mono">
-                  MISS • #{pic.category || 'School Update'}
+                  HOTPIC • #{pic.category || 'Aesthetic'}
                 </span>
               </div>
             </div>
@@ -282,7 +282,7 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
                     ? 'bg-emerald-950/80 border-emerald-800 text-emerald-400' 
                     : 'bg-gray-900 border-gray-800 text-slate-300 hover:text-orange-400'
                 }`}
-                title="Copy event link"
+                title="Copy picture link"
               >
                 <Share2 size={13} />
               </button>
@@ -292,9 +292,9 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
                 href={pic.imageUrl}
                 target="_blank"
                 rel="noreferrer"
-                download={pic.title || "mis-post"}
+                download={pic.title || "hotpic-post"}
                 className="p-1.5 bg-gray-900 hover:bg-orange-500 text-slate-300 hover:text-white border border-gray-800 hover:border-orange-500 rounded-lg transition shrink-0"
-                title="Download Attachment Wood"
+                title="View Original"
                 onClick={(e) => e.stopPropagation()}
               >
                 <Download size={13} />
@@ -346,7 +346,7 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
             <div className="max-w-lg mx-auto space-y-4">
               <div className="flex items-center justify-between gap-3 border-b border-gray-900 pb-3">
                 <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-400 to-amber-500 text-white flex items-center justify-center font-black text-[11px] uppercase">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-405 to-red-500 text-white flex items-center justify-center font-black text-[11px] uppercase">
                     {pic.uploaderName.substring(0, 1)}
                   </div>
                   <div>
@@ -377,29 +377,29 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
               {/* Caption Description text body */}
               <div className="space-y-1.5">
                 <p className="text-[11.5px] text-gray-300 leading-relaxed font-sans select-text">
-                  {pic.description || 'No detailed description was submitted with this campus update.'}
+                  {pic.description || 'No detailed description was submitted with this aesthetic visual.'}
                 </p>
                 
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   <span className="text-[8px] bg-orange-500/10 text-orange-400 px-2 py-0.5 rounded border border-orange-500/20 font-bold font-mono uppercase">
-                    #{pic.category || 'GENERAL'}
+                    #{pic.category || 'AESTHETIC'}
                   </span>
                   <span className="text-[8px] bg-gray-950 text-gray-500 px-2 py-0.5 rounded border border-gray-900 font-mono uppercase">
-                    #MONROVIA_LIBERIA
+                    #WALLPAPER
                   </span>
                   <span className="text-[8px] bg-gray-950 text-gray-500 px-2 py-0.5 rounded border border-gray-900 font-mono uppercase">
-                    #MULTEE_MISS
+                    #HOTPIC
                   </span>
                 </div>
               </div>
 
               {copiedShare ? (
                 <div className="text-center text-[9px] text-emerald-400 font-bold font-mono py-1.5 bg-emerald-500/10 rounded-lg animate-pulse border border-emerald-500/20">
-                  ✓ Document/photo link has been successfully copied to clipboard.
+                  ✓ Photo URL has been successfully copied to clipboard.
                 </div>
               ) : (
                 <div className="text-center text-[8.5px] text-gray-600 font-mono">
-                  MISS Database ID Ref: {pic.id} • Secure Gatekeeper Active
+                  HotPic Database ID Ref: {pic.id} • Secure Gatekeeper Active
                 </div>
               )}
             </div>

@@ -8,9 +8,8 @@ import {
   Info,
   Smartphone,
   Send,
-  ExternalLink,
   QrCode,
-  GraduationCap
+  Flame
 } from 'lucide-react';
 
 interface ShareManifestModalProps {
@@ -28,13 +27,12 @@ export default function ShareManifestModal({
 }: ShareManifestModalProps) {
   const [copied, setCopied] = useState(false);
   const shareUrl = window.location.origin;
-  const appTitle = "Multee International School System (MISS) Portal";
-  const shareText = `Explore the official portal of Multee International School System (MISS) in Monrovia, Liberia. Browse news, TVET vocational training, academics, and activities: ${shareUrl}`;
+  const shareText = `Discover stunning aesthetic captures, cyberpunk neon, stunning scenery, minimalist visual flows, and high-resolution photography on HotPic! Browse and share: ${shareUrl}`;
 
   if (!isOpen) return null;
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(shareUrl || 'https://miss-portal.org');
+    navigator.clipboard.writeText(shareUrl || 'https://hotpic-gallery.org');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -43,7 +41,7 @@ export default function ShareManifestModal({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Multee Int\'l School System (MISS) Portal',
+          title: 'HotPic - Curated Aesthetic & Photography',
           text: shareText,
           url: shareUrl
         });
@@ -74,12 +72,12 @@ export default function ShareManifestModal({
         id="share-modal-container"
       >
         {/* Accent Bar */}
-        <div className="bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 h-1.5 w-full" />
+        <div className="bg-gradient-to-r from-orange-500 via-red-500 to-amber-500 h-1.5 w-full" />
         
         {/* Close */}
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-slate-100 bg-gray-900/60 hover:bg-gray-800 p-1.5 rounded-lg transition"
+          className="absolute top-4 right-4 text-gray-400 hover:text-slate-100 bg-gray-901/60 hover:bg-gray-800 p-1.5 rounded-lg transition"
         >
           <X size={16} />
         </button>
@@ -88,14 +86,14 @@ export default function ShareManifestModal({
           {/* Header Area */}
           <div className="flex items-center space-x-4">
             <div className="w-14 h-14 rounded-2xl border-2 border-orange-500/40 p-1 overflow-hidden shadow-lg bg-gray-950 shrink-0 flex items-center justify-center">
-              <GraduationCap className="w-8 h-8 text-orange-400" />
+              <Flame className="w-8 h-8 text-orange-500 animate-pulse" />
             </div>
             <div>
               <h3 className="text-xl font-bold text-slate-100 font-sans tracking-tight">
-                Install & Share MISS Portal
+                Install & Share HotPic
               </h3>
               <p className="text-xs text-orange-400 font-medium">
-                Add to your phone home screen & share with parent networks
+                Add to your phone home screen & share with creative networks
               </p>
             </div>
           </div>
@@ -110,7 +108,7 @@ export default function ShareManifestModal({
                   <span>Install Web App</span>
                 </div>
                 <p className="text-[11px] text-gray-400 mt-1.5 leading-relaxed">
-                  Browse activities offline, save bandwidth, and load the MISS portal instantly with single-tap home screen access!
+                  Browse aesthetic pictures offline, save internet bandwidth, and load the HotPic portal instantly with single-tap home screen access!
                 </p>
               </div>
 
@@ -120,7 +118,7 @@ export default function ShareManifestModal({
                   className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold py-2 px-3 rounded-lg text-xs flex items-center justify-center space-x-1.5 cursor-pointer transition shadow-lg shadow-orange-500/20"
                 >
                   <Download size={14} />
-                  <span>Add school app to phone</span>
+                  <span>Add App to Phone</span>
                 </button>
               ) : (
                 <div className="p-2.5 bg-gray-900 rounded-lg space-y-1.5">
@@ -136,15 +134,15 @@ export default function ShareManifestModal({
               )}
             </div>
 
-            {/* Offline Tool Share (Xender, Bluetooth) */}
+            {/* Offline Tool Share */}
             <div className="p-4 bg-gray-950 border border-gray-800/80 rounded-xl flex flex-col justify-between space-y-3">
               <div>
                 <div className="flex items-center space-x-2 text-slate-200 font-semibold text-sm">
                   <Share2 size={16} className="text-amber-400" />
-                  <span>Xender & Offline Export</span>
+                  <span>Direct Sharing Option</span>
                 </div>
                 <p className="text-[11px] text-gray-400 mt-1.5 leading-relaxed">
-                  To share via bluetooth hotspot, Xender setups, or local networks, copy the unique secure link!
+                  To easily share HotPic to local devices via wireless hotspots, Bluetooth, or sharing apps, copy the link below!
                 </p>
               </div>
 
@@ -156,7 +154,7 @@ export default function ShareManifestModal({
                   {copied ? (
                     <>
                       <Check size={14} className="text-green-400" />
-                      <span className="text-green-400">Copied Portal Link!</span>
+                      <span className="text-green-400">Copied Link!</span>
                     </>
                   ) : (
                     <>
@@ -230,7 +228,7 @@ export default function ShareManifestModal({
             <QrCode className="text-orange-400 shrink-0 mt-0.5" size={16} />
             <div className="text-[10px] text-gray-500 leading-relaxed font-mono">
               <span className="text-gray-300 font-bold block mb-0.5">XENDER LOCAL TRANSFER OPTION:</span>
-              Open Xender on your smartphone, tap Web-share, connect to local MISS computer hotspots, and share educational flyers or enrollment receipts with full integrity.
+              Open Xender on your smartphone, tap Web-share, connect to local HotPic computer hotspot, and share creative collection files with your nearby friends instantly.
             </div>
           </div>
 

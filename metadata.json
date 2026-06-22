@@ -1,6 +1,6 @@
 {
-  "name": "Multee International School System",
-  "description": "Official portal for Multee International School System (MISS) in Monrovia, Liberia. Offering quality nursery to high school education and TVET training.",
+  "name": "HotPic",
+  "description": "An image-sharing board where administrators moderate user uploads before they are displayed to the public.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

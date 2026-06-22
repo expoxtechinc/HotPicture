@@ -16,22 +16,23 @@ import {
   User 
 } from 'firebase/auth';
 import { 
-  GraduationCap, 
+  Flame, 
   LogOut, 
   UploadCloud, 
   LayoutGrid, 
   ShieldAlert, 
-  BookOpen, 
-  Search, 
-  Phone, 
-  Mail, 
-  MapPin, 
-  Award, 
-  Cpu, 
   Sparkles, 
+  Search, 
+  Download, 
+  Plus, 
+  Globe, 
+  Compass, 
+  Heart, 
   Loader2, 
   Share2, 
-  ExternalLink 
+  ExternalLink,
+  Laptop,
+  Image as ImageIcon
 } from 'lucide-react';
 import { Picture } from './types';
 import AddPicForm from './components/AddPicForm';
@@ -40,75 +41,75 @@ import PicCard from './components/PicCard';
 import AuthModal from './components/AuthModal';
 import ShareManifestModal from './components/ShareManifestModal';
 
-// MISS School categories for interactive stream filter
+// Categories matching standard aesthetic visual curation
 const CATEGORIES = [
   'All', 
-  'News / Update', 
-  'Vocational TVET', 
-  'Academic Pride', 
-  'Debate & Quiz', 
-  'Campus Life', 
-  'Sports & Rec', 
-  'Inquiries'
+  'Aesthetic', 
+  'Cyberpunk', 
+  'Minimalist', 
+  'Nature', 
+  'Street Art', 
+  'Abstract', 
+  'Retro'
 ];
 
-// High-quality local seed updates to display MISS content out-of-the-box
+// Beautiful high-resolution premium initial default visual assets
 const LOCAL_SEED_POSTS: Picture[] = [
   {
-    id: 'seed-debate-champs',
-    title: 'MISS Debate Team Clinches Liberia Regional Championship!',
-    description: 'Our elite quiz bowl and debate students represented the Greenland Community in Johnsonville with absolute class, taking home the grand regional cup. Special thanks to the faculty coaches!',
-    imageUrl: 'https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=800&auto=format&fit=crop',
-    uploaderId: 'staff-seed',
-    uploaderName: 'Principal\'s Office',
-    uploaderEmail: 'multeeschoolsystem@gmail.com',
+    id: 'seed-neon-tokyo',
+    title: 'Rainy Sidewalks in Neo-Tokyo Shinjuku District',
+    description: 'Electric cyan and violet glare reflecting effortlessly off the glistening asphalt. Shot with a vintage 50mm f/1.4 lens to emphasize local neon depth.',
+    imageUrl: 'https://images.unsplash.com/photo-1540959733332-eab4deceeaf7?w=800&auto=format&fit=crop',
+    uploaderId: 'curator-seed',
+    uploaderName: 'CyberCurator',
+    uploaderEmail: 'luckyglobalnews@gmail.com',
     uploaderRole: 'admin',
     status: 'approved',
     createdAt: { seconds: 1782122458 },
-    likes: 12,
-    category: 'Debate & Quiz'
+    likes: 42,
+    category: 'Cyberpunk'
   },
   {
-    id: 'seed-tvet-tailoring',
-    title: 'Vocational TVET: Tailoring and Fashion Design Exhibition',
-    description: 'Creative designs showcased by our talented TVET vocational students. Students learn hands-on cutting, designing, and professional sewing to graduate with industry-ready workforce skills.',
-    imageUrl: 'https://images.unsplash.com/photo-1556905200-279565513a2d?w=800&auto=format&fit=crop',
-    uploaderId: 'staff-seed',
-    uploaderName: 'TVET Dept',
-    uploaderEmail: 'multeeschoolsystem@gmail.com',
+    id: 'seed-minimalist',
+    title: 'Sunlight Pathing Through Scandinavian Minimalist Lounge',
+    description: 'An study in natural geometry, neutral colors, wood grain, and warm organic negative space. Perfect inspiration for visual simplicity.',
+    imageUrl: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&auto=format&fit=crop',
+    uploaderId: 'curator-seed',
+    uploaderName: 'SpaceAesthetic',
+    uploaderEmail: 'luckyglobalnews@gmail.com',
     uploaderRole: 'admin',
     status: 'approved',
     createdAt: { seconds: 1782112458 },
-    likes: 8,
-    category: 'Vocational TVET'
+    likes: 28,
+    category: 'Minimalist'
   },
   {
-    id: 'seed-computer-lab',
-    title: 'Computer Science and Journalism Lab Expansion',
-    description: 'Equipped with brand-new computers! Senior high and vocational trainees enjoy direct access to digital research tools, programming courses, and media broadcast simulation practices.',
-    imageUrl: 'https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=800&auto=format&fit=crop',
-    uploaderId: 'staff-seed',
-    uploaderName: 'Computer Science Dept',
-    uploaderEmail: 'multeeschoolsystem@gmail.com',
+    id: 'seed-nature-glow',
+    title: 'Warm Alpenglow Coating Alpine Mountain Horizon',
+    description: 'Breathtaking light refraction across granite cliffs right at the turn of twilight. Taken during gold hour at high altitude.',
+    imageUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&auto=format&fit=crop',
+    uploaderId: 'curator-seed',
+    uploaderName: 'ApexVision',
+    uploaderEmail: 'luckyglobalnews@gmail.com',
     uploaderRole: 'admin',
     status: 'approved',
     createdAt: { seconds: 1782102458 },
-    likes: 14,
-    category: 'Vocational TVET'
+    likes: 56,
+    category: 'Nature'
   },
   {
-    id: 'seed-general-enrollment',
-    title: 'Enrollment Ongoing: Nursery, Junior & Senior High!',
-    description: 'Provide your child a stellar academic background in Greenland, Johnsonville. We offer structured STEM modules, humanities, and high-quality teachers. Visit us or reach out via +231 77 782 9659.',
-    imageUrl: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=800&auto=format&fit=crop',
-    uploaderId: 'staff-seed',
-    uploaderName: 'Registrar Board',
-    uploaderEmail: 'multeeschoolsystem@gmail.com',
+    id: 'seed-abstract-fluid',
+    title: 'Pastel Fluid Dynamics and Swirling Paints',
+    description: 'Liquid acrylic exploration focusing on contrast gradients. Perfect aesthetic texture for desktop and mobile screen backgrounds.',
+    imageUrl: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800&auto=format&fit=crop',
+    uploaderId: 'curator-seed',
+    uploaderName: 'Chromatica',
+    uploaderEmail: 'luckyglobalnews@gmail.com',
     uploaderRole: 'admin',
     status: 'approved',
     createdAt: { seconds: 1782092458 },
-    likes: 9,
-    category: 'News / Update'
+    likes: 39,
+    category: 'Abstract'
   }
 ];
 
@@ -120,8 +121,8 @@ export default function App() {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   
-  // Real-time mobile OS simulator clock
-  const [currentTime, setCurrentTime] = useState('09:55 AM');
+  // Real-time phone clock
+  const [currentTime, setCurrentTime] = useState('12:00 PM');
   const [isProfileDrawerOpen, setIsProfileDrawerOpen] = useState(false);
 
   useEffect(() => {
@@ -140,12 +141,12 @@ export default function App() {
 
   const [connectionVerified, setConnectionVerified] = useState(false);
 
-  // Monitor Progressive Web App install prompt triggers
+  // Handle Progressive Web App installation triggers
   useEffect(() => {
     const handleInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      console.log('Progressive Web App install eligibility detected.');
+      console.log('PWA launch installer criteria fulfilled.');
     };
     window.addEventListener('beforeinstallprompt', handleInstallPrompt);
     return () => {
@@ -157,11 +158,11 @@ export default function App() {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    console.log('PWA installation prompt user status response:', outcome);
+    console.log('User response to app installer popup:', outcome);
     setDeferredPrompt(null);
   };
 
-  // Switch between interactive school boards
+  // Switch between smartphone simulator tabs
   const [activeTab, setActiveTab] = useState<'gallery' | 'my-uploads' | 'admin-board' | 'upload'>('gallery');
   const [approvedPics, setApprovedPics] = useState<Picture[]>([]);
   const [myPics, setMyPics] = useState<Picture[]>([]);
@@ -171,7 +172,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
-  // Firebase connection validation
+  // Core Firebase Connection Test
   useEffect(() => {
     async function testConnection() {
       try {
@@ -179,19 +180,19 @@ export default function App() {
         setConnectionVerified(true);
       } catch (error) {
         if (error instanceof Error && error.message.includes('the client is offline')) {
-          console.error("Please check your Firebase configuration. Client is offline.");
+          console.error("Firebase response: App is working but client state is local.");
         }
       }
     }
     testConnection();
   }, []);
 
-  // Listen to Auth State Changed
+  // Monitor Auth Changes
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        // Evaluate the bootstrapped Admin condition
+        // Administrator designated email
         const holdsAdminPrivileges = currentUser.email === 'luckyglobalnews@gmail.com';
         setIsAdmin(holdsAdminPrivileges);
       } else {
@@ -203,7 +204,7 @@ export default function App() {
     return () => unsubAuth();
   }, []);
 
-  // Real-time listener for Approved Pictures/Posts (Feeds)
+  // Sync approved uploads reactively
   useEffect(() => {
     setPicsLoading(true);
 
@@ -220,7 +221,7 @@ export default function App() {
           list.push({ id: doc.id, ...doc.data() } as Picture);
         });
 
-        // Client-side sorting
+        // Soft internal sort
         list.sort((a, b) => {
           const aTime = a.createdAt?.seconds || 0;
           const bTime = b.createdAt?.seconds || 0;
@@ -239,7 +240,7 @@ export default function App() {
     return () => unsubApproved();
   }, []);
 
-  // Real-time listener for "My Uploads/Drafts" (when signed in)
+  // Sync current user's uploads reactively
   useEffect(() => {
     if (!user) {
       setMyPics([]);
@@ -282,7 +283,7 @@ export default function App() {
       await signInWithPopup(auth, provider);
     } catch (err: any) {
       console.error('Google Auth Failed:', err);
-      alert('Authentication failed to resolve. Check browser permissions.');
+      alert('Authentication popup canceled or failed to load.');
     }
   };
 
@@ -295,13 +296,11 @@ export default function App() {
     }
   };
 
-  // Merge Firestore-approved posts with our premium local seed updates
-  // This guarantees an attractive and content-rich stream instantly
+  // Merge database items with premium seed uploads for an out-of-the-box breath-taking look
   const getAllUnifiedPosts = () => {
     const dbPosts = [...approvedPics];
     const seededList = [...LOCAL_SEED_POSTS];
     
-    // Combine and remove seed duplicates if a real post exists with the same ID
     const merged = [...dbPosts];
     seededList.forEach(seed => {
       if (!merged.some(p => p.title.toLowerCase() === seed.title.toLowerCase())) {
@@ -309,7 +308,6 @@ export default function App() {
       }
     });
 
-    // Final sorting: newest first
     return merged.sort((a, b) => {
       const aTime = a.createdAt?.seconds || 0;
       const bTime = b.createdAt?.seconds || 0;
@@ -319,7 +317,7 @@ export default function App() {
 
   const unifiedPosts = getAllUnifiedPosts();
 
-  // Perform client-side filter of the approved posts list
+  // Perform multi-match client filter
   const filteredPics = unifiedPosts.filter((pic) => {
     const matchesSearch = 
       pic.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -334,130 +332,124 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#07080a] text-slate-100 flex flex-col lg:flex-row items-center justify-center font-sans relative overflow-hidden selection:bg-orange-500 selection:text-white">
       
-      {/* Background radial glowing ambient light effects for desktop previewers */}
-      <div className="absolute top-1/4 left-1/4 -translate-y-1/2 -translate-x-1/2 w-96 h-96 bg-orange-600/10 rounded-full blur-[140px] pointer-events-none hidden lg:block" />
-      <div className="absolute bottom-1/4 right-1/4 translate-y-1/2 translate-x-1/2 w-96 h-96 bg-amber-600/10 rounded-full blur-[140px] pointer-events-none hidden lg:block" />
+      {/* Decorative ambient blurred orb flares */}
+      <div className="absolute top-1/4 left-1/4 -translate-y-1/2 -translate-x-1/2 w-96 h-96 bg-red-600/10 rounded-full blur-[140px] pointer-events-none hidden lg:block" />
+      <div className="absolute bottom-1/4 right-1/4 translate-y-1/2 translate-x-1/2 w-96 h-96 bg-orange-600/10 rounded-full blur-[140px] pointer-events-none hidden lg:block" />
 
-      {/* Hero Welcome Info Panel (Left side on widescreen viewports) */}
+      {/* Hero Curated Info Column (Left side of widescreen viewports) */}
       <div className="hidden lg:flex fixed left-8 xl:left-16 top-1/2 -translate-y-1/2 max-w-sm flex-col space-y-4 text-left z-10 overflow-y-auto max-h-[90vh] pr-2 scrollbar-none">
         
-        {/* Crest Shield Logo block */}
+        {/* HotPic Primary Brand Identity */}
         <div className="flex items-center space-x-3.5">
-          <div className="w-14 h-14 border-2 border-orange-500/40 rounded-2xl overflow-hidden p-0.5 shadow-xl bg-gray-950 flex items-center justify-center">
-            <GraduationCap className="w-8 h-8 text-orange-400" />
+          <div className="w-14 h-14 border-2 border-orange-500/40 rounded-2xl overflow-hidden p-0.5 shadow-xl bg-gray-950 flex items-center justify-center animate-pulse">
+            <Flame className="w-8 h-8 text-orange-500" />
           </div>
           <div>
             <h1 className="text-2xl font-black tracking-tight leading-none text-slate-100 uppercase">
-              Multee (MISS)
+              HotPic
             </h1>
-            <span className="text-[10px] uppercase font-mono tracking-widest text-[#f97316] font-bold block mt-1">
-              International School System
+            <span className="text-[10px] uppercase font-mono tracking-widest text-orange-400 font-black block mt-1">
+              Curated Art Collection
             </span>
           </div>
         </div>
 
-        {/* Academic Brief */}
-        <div className="space-y-2 text-xs text-gray-400 leading-relaxed">
+        {/* Narrative introduction description */}
+        <div className="space-y-2 text-xs text-slate-400 leading-relaxed">
           <p>
-            An esteemed private institution in the <strong className="text-slate-200">Greenland Community of Johnsonville, Monrovia, Liberia</strong>, offering premium nursery to senior high school education.
+            Welcome to the ultimate community wallpaper collection dashboard. We gather and showcase <strong className="text-slate-200">cyberpunk neon scenery, minimalist aesthetic structures, fluid digital paint arts</strong>, and high-resolution captures.
           </p>
           <p>
-            MISS is famous for deep integration of STEM modules, liberal arts, and national accolades including multiple regional quiz bowl wins and debate champion titles.
+            Authentic visual items are processed through our multi-signature verification gateway. Sign in to contribute your unique captures, upload custom wallpapers, and upvote files.
           </p>
         </div>
 
-        {/* TVET programs list */}
+        {/* Curation checklist */}
         <div className="p-4 bg-gray-950/80 border border-gray-901 rounded-2xl space-y-2 outline outline-1 outline-gray-900 shadow-md">
-          <h2 className="text-xs font-bold text-orange-400 uppercase tracking-wider flex items-center gap-1.5">
-            <Cpu size={12} />
-            <span>TVET Vocational Curriculum</span>
+          <h2 className="text-xs font-bold text-orange-400 uppercase tracking-wider flex items-center gap-1.5 font-mono">
+            <Compass size={12} className="text-orange-500" />
+            <span>Curatorial Guidelines</span>
           </h2>
           <p className="text-[11px] text-gray-500 leading-snug">
-            Equipping tomorrow's workforce with premium technical certificates:
+            We actively seek high-contrast, beautiful art directions including:
           </p>
-          <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 text-[10px] text-gray-400">
-            <span className="flex items-center gap-1">✂️ Tailoring & Fashion</span>
-            <span className="flex items-center gap-1">💇 Hair-Dressing</span>
-            <span className="flex items-center gap-1">💅 Beauty Care</span>
-            <span className="flex items-center gap-1">🎙️ Journalism</span>
-            <span className="flex items-center gap-1">💻 Computer Science</span>
-            <span className="flex items-center gap-1">🥐 Pastry & Culinary</span>
+          <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 text-[10px] text-gray-400 font-mono">
+            <span className="flex items-center gap-1">🌃 Cyberpunk Streets</span>
+            <span className="flex items-center gap-1">🪵 Minimalist Rooms</span>
+            <span className="flex items-center gap-1">🏜️ Golden Hour Glow</span>
+            <span className="flex items-center gap-1">🎨 Fluid Gradients</span>
+            <span className="flex items-center gap-1">📸 Analogue Vintage</span>
+            <span className="flex items-center gap-1">🌾 Quiet Nature Scenic</span>
           </div>
         </div>
 
-        {/* Quick school contact action metrics */}
+        {/* Community stats */}
         <div className="p-4 bg-gray-950/80 border border-gray-901 rounded-2xl space-y-2.5 outline outline-1 outline-gray-900">
-          <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider">Registrar Secretariat</h3>
-          
-          <div className="space-y-1.5 text-[11px] text-gray-400">
-            <a href="tel:+231777829659" className="flex items-center space-x-2 hover:text-orange-400 transition">
-              <Phone size={12} className="text-orange-500" />
-              <span>+231 77 782 9659</span>
-            </a>
-            <a href="mailto:multeeschoolsystem@gmail.com" className="flex items-center space-x-2 hover:text-orange-400 transition">
-              <Mail size={12} className="text-orange-500" />
-              <span className="truncate">multeeschoolsystem@gmail.com</span>
-            </a>
-            <div className="flex items-center space-x-2">
-              <MapPin size={12} className="text-orange-500" />
-              <span>Greenland, Johnsonville, Liberia</span>
-            </div>
+          <div className="flex justify-between items-center text-[11px]">
+            <span className="text-gray-400">Total Curators:</span>
+            <span className="text-slate-100 font-bold font-mono">Active Community</span>
+          </div>
+          <div className="flex justify-between items-center text-[11px] border-t border-gray-900 pt-2">
+            <span className="text-gray-400">Audit Response:</span>
+            <span className="text-emerald-400 font-bold font-mono flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live Server Sync
+            </span>
           </div>
         </div>
 
       </div>
 
-      {/* Mobile Security Gatekeeper Notice (Right side on ultra-widescreen viewports) */}
+      {/* Moderation Safety Gate Statement (Right side of widescreen viewports) */}
       <div className="hidden xl:flex fixed right-8 xl:right-16 top-1/2 -translate-y-1/2 max-w-xs flex-col space-y-4 text-left z-10">
         <div className="p-5 bg-gray-950/40 backdrop-blur-md border border-gray-900 rounded-3xl space-y-3 shadow-xl">
-          <div className="flex items-center space-x-1.5 text-[10px] font-black text-orange-400 uppercase tracking-widest">
+          <div className="flex items-center space-x-1.5 text-[10px] font-black text-orange-400 uppercase tracking-widest font-mono">
             <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-            <span>MISS Board Gatekeeper</span>
+            <span>Secure Gatekeeper</span>
           </div>
           <p className="text-[11px] text-gray-400 leading-relaxed">
-            All submitted school news, parent feedback notes, and project images must comply with our high academic standards. Administrators review submissions before they list.
+            All submitted images, captions, and links undergo automated review by our administrative curators. Submissions bypass queues once approved by registered moderators.
           </p>
           <div className="pt-2.5 border-t border-gray-900 flex items-center justify-between text-[9px] text-gray-500 font-mono">
-            <span>Secure Core:</span>
-            <span className="text-emerald-400 font-bold">MISS Database Active</span>
+            <span>Server Version:</span>
+            <span className="text-orange-400 font-bold font-mono">HotPic v2.4</span>
           </div>
         </div>
 
-        {/* Web app sharing options */}
+        {/* Install / Share prompt drawer trigger */}
         <button 
           onClick={() => setIsShareModalOpen(true)}
-          className="w-full py-2.5 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/20 hover:border-orange-500/40 text-[11px] font-bold rounded-xl transition duration-200 cursor-pointer text-orange-400 block text-center"
+          className="w-full py-2.5 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/20 hover:border-orange-500/40 text-[11px] font-bold rounded-xl transition duration-200 cursor-pointer text-orange-400 block text-center uppercase tracking-wider font-mono"
         >
-          Share School App Client ➜
+          Add to Home Screen ➜
         </button>
       </div>
 
-      {/* Main Handheld Smartphone Mock Container */}
+      {/* Main Handheld Smartphone Mock Wrapper */}
       <div className="w-full h-screen lg:h-[840px] lg:max-h-[92vh] lg:w-[410px] bg-[#090b0e] border-0 lg:border-[10px] lg:border-slate-800/90 lg:rounded-[50px] lg:shadow-[0_24px_70px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.05),0_0_40px_rgba(249,115,22,0.08)] relative overflow-hidden flex flex-col z-20">
         
-        {/* Physical Camera lens Notch indicator */}
+        {/* Widescreen Camera lens physical notch indicator */}
         <div className="hidden lg:block absolute top-3.5 left-1/2 -translate-x-1/2 w-28 h-5.5 bg-black rounded-full z-40 flex items-center justify-center">
           <div className="w-2.5 h-2.5 rounded-full bg-[#141416] border border-gray-900 absolute left-3.5" />
           <div className="w-1 h-1 rounded-full bg-slate-900 absolute right-7" />
         </div>
 
-        {/* Simulated Native OS Status Bar */}
+        {/* Native OS Simulator Top Bar */}
         <div className="bg-[#090b0e] h-10 px-6 shrink-0 flex items-center justify-between text-[10px] font-sans font-bold tracking-wide select-none z-30 border-b border-gray-950/60">
           <span className="text-slate-200">{currentTime}</span>
           
-          {/* Simulated Notch spacer in desktop window */}
+          {/* Simulated space reserve for notch */}
           <div className="hidden lg:block w-24" />
 
-          {/* Connection Indicators */}
+          {/* Connection metrics */}
           <div className="flex items-center space-x-1.5 text-slate-300">
-            <div className="flex items-end space-x-[1.5px]" title="MISS Network sync">
+            <div className="flex items-end space-x-[1.5px]" title="WiFi Status">
               <span className="w-[1.5px] h-1 bg-orange-400 rounded-px"></span>
               <span className="w-[1.5px] h-1.5 bg-orange-400 rounded-px"></span>
               <span className="w-[1.5px] h-2 bg-orange-400 rounded-px"></span>
-              <span className="w-[1.5px] h-2.5 bg-orange-400 rounded-px"></span>
+              <span className="w-[1.5px] h-2.5 bg-orange-500 rounded-px"></span>
               <span className="w-[1.5px] h-3 bg-orange-500 rounded-px"></span>
             </div>
-            <span className="text-[8px] font-mono tracking-tight text-orange-400 font-black">WiFi</span>
+            <span className="text-[8px] font-mono tracking-tight text-orange-400 font-black">5G</span>
             
             <svg className="w-3.5 h-3.5 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3">
               <path strokeLinecap="round" strokeLinejoin="round" d="M8.251 14.228c2.073-2.073 5.425-2.073 7.498 0m-9.996-2.498c3.456-3.457 9.061-3.457 12.518 0M3.75 8.25c4.761-4.761 12.48-4.761 17.24 0M12 18.75h.008v.008H12v-.008z" />
@@ -467,7 +459,6 @@ export default function App() {
               <div className="h-full w-4/5 bg-gradient-to-r from-emerald-500 to-green-400 rounded-[1px]" />
               <div className="w-[1px] h-1 bg-slate-500 rounded-r-xs absolute -right-[1.5px]" />
             </div>
-            <span className="text-[8px] font-mono text-slate-400">92%</span>
           </div>
         </div>
 
@@ -475,23 +466,24 @@ export default function App() {
         <header className="bg-[#0f1115]/90 backdrop-blur-md px-4 py-3 shrink-0 flex items-center justify-between border-b border-gray-900 z-30">
           <div className="flex items-center space-x-2 cursor-pointer" onClick={() => setActiveTab('gallery')}>
             <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center border border-orange-400/20 shadow">
-              <GraduationCap className="w-4.5 h-4.5 text-white" />
+              <Flame className="w-4.5 h-4.5 text-white" />
             </div>
             <div>
-              <span className="text-sm font-black bg-gradient-to-r from-slate-100 to-orange-400 bg-clip-text text-transparent">
-                MISS Portal
+              <span className="text-sm font-black bg-gradient-to-r from-slate-100 to-orange-400 bg-clip-text text-transparent uppercase tracking-tight">
+                HotPic
               </span>
               <span className="text-[7.5px] text-orange-500 uppercase tracking-wider block leading-none font-bold">
-                Monrovia, Liberia
+                Aesthetic Curation
               </span>
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1.5">
+            {/* Share action */}
             <button 
               onClick={() => setIsShareModalOpen(true)}
               className="p-1.5 rounded-lg bg-gray-950 hover:bg-gray-900 border border-gray-900 text-orange-400 transition cursor-pointer"
-              title="Share app link"
+              title="Share Art App"
             >
               <Share2 size={13} />
             </button>
@@ -503,7 +495,7 @@ export default function App() {
               <button 
                 onClick={() => setIsProfileDrawerOpen(true)}
                 className="relative p-0.5 rounded-full border border-orange-500/40 focus:outline-none transition active:scale-95"
-                title="Your Dashboard"
+                title="Creator Workspace"
               >
                 {user.photoURL ? (
                   <img src={user.photoURL} alt="Avatar" className="w-6 h-6 rounded-full" referrerPolicy="no-referrer" />
@@ -525,62 +517,63 @@ export default function App() {
           </div>
         </header>
 
-        {/* Interactive Scrolling Container Area for Tabs Content */}
+        {/* Scrollable Main Container Area for Page Content */}
         <main className="flex-1 overflow-y-auto scrollbar-none pb-24 bg-[#090b0e] flex flex-col">
           
-          {/* Guest restriction fallback except for the main gallery board */}
+          {/* Guest lock indicator */}
           {!user && activeTab !== 'gallery' && (
             <div className="px-5 py-12 text-center my-auto space-y-5">
               <div className="w-16 h-16 bg-gradient-to-b from-gray-900 to-transparent border border-gray-800 rounded-full flex items-center justify-center mx-auto text-2xl shadow-lg">
                 🔒
               </div>
               <div className="space-y-1.5">
-                <h3 className="text-sm font-bold text-slate-100">Contribution Board Locked</h3>
+                <h3 className="text-sm font-bold text-slate-100">Creation Workspace Locked</h3>
                 <p className="text-[11px] text-gray-500 leading-relaxed max-w-xs mx-auto">
-                  Sign in with any verification account to submit school activities, write suggestions, upvote announcements or view private logs in real-time.
+                  Aesthetes and photographers sign in to add visual layouts, save curated wallpapers, upvote uploads, or track private contributions.
                 </p>
               </div>
               <button
                 onClick={() => setIsAuthModalOpen(true)}
                 className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl text-xs font-bold shadow-md shadow-orange-500/10 hover:scale-[1.01] active:scale-95 cursor-pointer transition"
               >
-                Sign In / Verify Now
+                Sign In / Sign Up
               </button>
             </div>
           )}
 
-          {/* Active Tab Area: School News and Activity Stream */}
+          {/* Active Tab Area: Shared Art Stream */}
           {activeTab === 'gallery' && (
             <div className="p-4 space-y-4">
               
-              {/* Informational Welcome Banner inside Phone mockup */}
+              {/* HotPic Greeting Banner */}
               <div className="p-3.5 bg-[#0f1115] border border-gray-905 rounded-2xl relative overflow-hidden space-y-1 shadow-sm outline outline-1 outline-gray-900">
-                <div className="flex items-center space-x-1 text-[10px] font-extrabold text-orange-400 uppercase tracking-widest leading-none">
+                <div className="flex items-center space-x-1 text-[10px] font-extrabold text-orange-400 uppercase tracking-widest leading-none font-mono">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>MISS Monrovia Stream Feed</span>
+                  <span>Curators feed dashboard</span>
                 </div>
                 <p className="text-[10px] text-gray-400 leading-relaxed">
-                  Welcome to the official Multee International School stream. Browse active academic news, debate wins, sports, and certified TVET Vocational showcase posts.
+                  Browse high-contrast cyberpunk neon scenery, minimalist spacing, fluid pastel colors, and high-resolution vintage analog photographs.
                 </p>
-                
-                {/* Embedded Dial Link */}
                 <div className="pt-2 flex items-center gap-2">
-                  <a 
-                    href="tel:+231777829659" 
-                    className="px-2.5 py-1 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/10 text-[9px] font-bold text-orange-400 rounded-lg flex items-center gap-1 shrink-0"
+                  <button 
+                    onClick={() => setIsShareModalOpen(true)}
+                    className="px-2.5 py-1 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/10 text-[9px] font-bold text-orange-400 rounded-lg flex items-center gap-1 shrink-0 cursor-pointer"
                   >
-                    <Phone size={8} /> Call Secretariat
-                  </a>
-                  <a 
-                    href="mailto:multeeschoolsystem@gmail.com" 
-                    className="px-2.5 py-1 bg-gray-900 hover:bg-gray-800 text-[9px] text-gray-400 hover:text-slate-200 border border-gray-800 rounded-lg flex items-center gap-1 shrink-0"
+                    <Plus size={8} /> Add to Home Screen
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!user) setIsAuthModalOpen(true);
+                      else setActiveTab('upload');
+                    }}
+                    className="px-2.5 py-1 bg-gray-900 hover:bg-gray-800 text-[9px] text-gray-400 hover:text-slate-200 border border-gray-800 rounded-lg flex items-center gap-1 shrink-0 cursor-pointer"
                   >
-                    <Mail size={8} /> Email school
-                  </a>
+                    <UploadCloud size={8} /> Share Photo
+                  </button>
                 </div>
               </div>
 
-              {/* Filtering Controls: Compact School Channel Category Slider */}
+              {/* Slider for Categories */}
               <div className="space-y-2">
                 <div className="flex items-center space-x-1.5 overflow-x-auto py-1 scrollbar-none">
                   {CATEGORIES.map((cat) => (
@@ -598,12 +591,12 @@ export default function App() {
                   ))}
                 </div>
 
-                {/* Compact Search Bar */}
+                {/* Aesthetic Search Bar */}
                 <div className="relative w-full">
                   <Search size={12} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
                   <input
                     type="text"
-                    placeholder="Search MISS streams, categories, authors..."
+                    placeholder="Search aesthetic focuses, artists, colors..."
                     className="w-full bg-gray-950/80 border border-gray-900 rounded-xl pl-9 pr-4 py-2 text-[11px] text-slate-200 focus:outline-none focus:border-orange-500 placeholder:text-gray-600 transition"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -611,17 +604,17 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Feed Content Grid */}
+              {/* Feed Grid representation */}
               {picsLoading ? (
                 <div className="flex flex-col items-center justify-center py-20">
                   <Loader2 className="w-7 h-7 text-orange-500 animate-spin mb-3" />
-                  <span className="text-[10px] font-mono text-gray-400">Syncing with MISS registrar boards...</span>
+                  <span className="text-[10px] font-mono text-gray-400">Syncing aesthetic boards...</span>
                 </div>
               ) : filteredPics.length === 0 ? (
                 <div className="text-center py-16 bg-[#0f1115] border border-dashed border-gray-900 rounded-2xl">
                   <span className="text-2xl block mb-2">🏜️</span>
-                  <p className="text-[11px] font-bold text-slate-400">No Stream Posts Match</p>
-                  <p className="text-[10px] text-gray-600 mt-1">Try selecting another channel or post custom material!</p>
+                  <p className="text-[11px] font-bold text-slate-400">No Captures Match Grid</p>
+                  <p className="text-[10px] text-gray-600 mt-1">Try choosing another tag or upload your own visuals!</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-3.5">
@@ -638,24 +631,24 @@ export default function App() {
             </div>
           )}
 
-          {/* Active Tab Area: User Submissions Tracker */}
+          {/* Active Tab Area: User Submissions Tracking */}
           {user && activeTab === 'my-uploads' && (
             <div className="p-4 space-y-4">
               <div className="border-b border-gray-900 pb-2">
-                <h3 className="text-xs font-black uppercase text-slate-300 tracking-wider">Submissions & Suggestions Logs</h3>
+                <h3 className="text-xs font-black uppercase text-slate-300 tracking-wider">Your Aesthetic Submissions</h3>
                 <p className="text-[10px] text-gray-500 mt-0.5">
-                  Track approved posts and draft publications currently being audited by staff.
+                  Track approved posts and designs currently being audited by active moderators.
                 </p>
               </div>
 
               {myPics.length === 0 ? (
                 <div className="text-center py-12 bg-[#0f1115] border border-gray-900 rounded-2xl space-y-3">
-                  <p className="text-[11px] text-gray-500">You haven't posted any school updates yet.</p>
+                  <p className="text-[11px] text-gray-500">You haven't uploaded any aesthetic pictures yet.</p>
                   <button
                     onClick={() => setActiveTab('upload')}
                     className="bg-gray-900 hover:bg-gray-800 border border-gray-800 text-orange-400 px-4 py-1.5 rounded-lg text-[10px] font-bold transition cursor-pointer"
                   >
-                    Submit Post
+                    Submit First Post
                   </button>
                 </div>
               ) : (
@@ -673,17 +666,17 @@ export default function App() {
             </div>
           )}
 
-          {/* Active Tab Area: Image/Article Upload Panel */}
+          {/* Active Tab Area: Upload Panel */}
           {user && activeTab === 'upload' && (
             <div className="p-4 space-y-3">
               <div className="text-center pb-2 border-b border-gray-900">
-                <h3 className="text-xs font-black uppercase text-slate-300 tracking-wider">Create MISS Stream Announcement</h3>
+                <h3 className="text-xs font-black uppercase text-slate-300 tracking-wider">Publish New Art Capture</h3>
                 <p className="text-[9.5px] text-gray-500 mt-0.5">
-                  Add photos, vocational trainees achievements, academic victories, or submit inquiries!
+                  Add custom photos, wallpapers, digital artwork configurations, or analog camera shots!
                 </p>
               </div>
               
-              <div className="bg-[#090b0e] rounded-xl">
+              <div className="bg-[#090b0e] rounded-xl font-sans">
                 <AddPicForm 
                   user={user} 
                   isAdmin={isAdmin} 
@@ -697,16 +690,16 @@ export default function App() {
             </div>
           )}
 
-          {/* Active Tab Area: Moderator Verification Queue Board */}
+          {/* Active Tab Area: Moderator Review Board */}
           {user && isAdmin && activeTab === 'admin-board' && (
             <div className="p-4 space-y-4">
               <div className="border-b border-red-500/20 pb-2">
                 <div className="flex items-center space-x-1.5">
                   <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-ping" />
-                  <h3 className="text-xs font-black uppercase text-red-400 tracking-wider">MISS Admin Control Board</h3>
+                  <h3 className="text-xs font-black uppercase text-red-500 tracking-wider">HotPic Audit Control panel</h3>
                 </div>
                 <p className="text-[10px] text-gray-500 mt-0.5">
-                  Authorized access panel for luckyglobalnews@gmail.com. Review community and parent stream guidelines.
+                  Moderator tools block. Confirm or deny public listings.
                 </p>
               </div>
               <ModeratorQueue adminUid={user.uid} />
@@ -715,10 +708,10 @@ export default function App() {
 
         </main>
 
-        {/* Tactical Bottom Mobile Navigation Bar inside Simulated Screen */}
+        {/* Bottom Smartphone Sticky Navigation Bar */}
         <nav className="absolute bottom-0 left-0 right-0 bg-[#0f1115]/95 backdrop-blur-md border-t border-gray-900 px-3 py-1.5 z-30 flex items-center justify-around select-none">
           
-          {/* Gallery Button */}
+          {/* Gallery Trigger */}
           <button
             onClick={() => setActiveTab('gallery')}
             className={`flex flex-col items-center justify-center py-1 px-3.5 rounded-xl transition duration-150 relative cursor-pointer ${
@@ -726,10 +719,10 @@ export default function App() {
             }`}
           >
             <LayoutGrid size={15} className="mb-0.5" />
-            <span className="text-[8.5px] tracking-tight"> MISS Stream</span>
+            <span className="text-[8.5px] tracking-tight">Gallery Feed</span>
           </button>
 
-          {/* Highlight Upload central Action Trigger */}
+          {/* Upload central accent key */}
           <button
             onClick={() => {
               if (!user) {
@@ -741,12 +734,12 @@ export default function App() {
             className={`flex flex-col items-center justify-center -translate-y-2 cursor-pointer w-11 h-11 rounded-full bg-gradient-to-r from-orange-400 to-amber-500 text-white font-bold transition shadow-lg shadow-orange-500/30 hover:scale-105 active:scale-95 z-40 ${
               activeTab === 'upload' ? 'ring-2 ring-orange-400 ring-offset-2 ring-offset-[#0f1115]' : ''
             }`}
-            title="Create Publication"
+            title="Upload Photo"
           >
             <UploadCloud size={16} />
           </button>
 
-          {/* Tracker Button */}
+          {/* My Submissions Trigger */}
           <button
             onClick={() => {
               if (!user) {
@@ -759,73 +752,73 @@ export default function App() {
               activeTab === 'my-uploads' ? 'text-orange-400 font-bold' : 'text-slate-500 hover:text-slate-300'
             }`}
           >
-            <BookOpen size={15} className="mb-0.5" />
-            <span className="text-[8.5px] tracking-tight">Your Activity</span>
+            <ImageIcon size={15} className="mb-0.5" />
+            <span className="text-[8.5px] tracking-tight">My Captures</span>
             
             {user && myPics.length > 0 && (
-              <span className="absolute top-0 right-2 bg-orange-500 text-white text-[8px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center border border-slate-950 scale-90">
+              <span className="absolute top-0 right-2 bg-orange-500 text-white text-[8px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center border border-slate-950 scale-90 animate-pulse">
                 {myPics.length}
               </span>
             )}
           </button>
 
-          {/* Optional Gatekeeper Board Trigger (Only visible to Admin) */}
+          {/* Moderator Queue button (staff/admin) */}
           {isAdmin && (
             <button
               onClick={() => setActiveTab('admin-board')}
               className={`flex flex-col items-center justify-center py-1 px-3.5 rounded-xl transition duration-150 relative cursor-pointer ${
-                activeTab === 'admin-board' ? 'text-red-400 font-bold' : 'text-yellow-505/60 hover:text-yellow-400'
+                activeTab === 'admin-board' ? 'text-red-400 font-bold' : 'text-slate-500 hover:text-red-400'
               }`}
             >
               <ShieldAlert size={15} className="mb-0.5" />
-              <span className="text-[8.5px] tracking-tight">Audit Queue</span>
+              <span className="text-[8.5px] tracking-tight">Mod Queue</span>
             </button>
           )}
 
         </nav>
 
-        {/* Simulated iOS/Android Bottom Home Indicator Line Bar */}
+        {/* Physical Home bar indicator */}
         <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-28 h-1 bg-gray-800 rounded-full z-45 pointer-events-none hidden lg:block" />
 
-        {/* Mobile Settings Drawer Sheet (Bottom Sheet Trigger when clicking user avatar) */}
+        {/* Bottom Profile Settings drawer panel */}
         {isProfileDrawerOpen && user && (
-          <div className="absolute inset-0 z-50 bg-black/70 backdrop-blur-sm flex flex-col justify-end">
+          <div className="absolute inset-0 z-50 bg-black/70 backdrop-blur-sm flex flex-col justify-end animate-fade-in">
             <div className="absolute inset-0 -z-10" onClick={() => setIsProfileDrawerOpen(false)} />
             
             <div className="w-full bg-[#0f1115] border-t border-gray-800 rounded-t-[32px] p-6 space-y-5 shadow-2xl relative">
               
               <div className="w-10 h-1 bg-gray-800 rounded-full mx-auto mb-1 pointer-events-none" />
 
-              {/* Profile Overview */}
+              {/* Profile card details */}
               <div className="flex items-center space-x-3.5">
                 {user.photoURL ? (
                   <img src={user.photoURL} alt="Avatar" className="w-12 h-12 rounded-full border-2 border-orange-500/20" referrerPolicy="no-referrer" />
                 ) : (
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-orange-400 to-amber-500 text-white flex items-center justify-center font-black text-sm uppercase">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-orange-400 to-amber-500 text-white flex items-center justify-center font-black text-sm uppercase font-mono">
                     {user.email?.substring(0, 1)}
                   </div>
                 )}
                 <div>
-                  <h4 className="text-sm font-bold text-slate-100">{user.displayName || 'MISS Community Member'}</h4>
+                  <h4 className="text-sm font-bold text-slate-100">{user.displayName || 'Contributor'}</h4>
                   <p className="text-[10px] text-gray-500">{user.email}</p>
                 </div>
               </div>
 
-              {/* Stats & Actions */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 bg-gray-950 rounded-2xl text-center space-y-0.5 border border-gray-901">
-                  <span className="text-[10px] text-gray-500 uppercase block font-bold font-mono tracking-wider">Your Posts</span>
+              {/* Quick stats items */}
+              <div className="grid grid-cols-2 gap-3 font-mono text-center">
+                <div className="p-3 bg-gray-950 rounded-2xl space-y-0.5 border border-gray-901">
+                  <span className="text-[10px] text-gray-500 uppercase block font-bold tracking-wider">Posts</span>
                   <span className="text-lg font-black text-orange-400">{myPics.length} logs</span>
                 </div>
-                <div className="p-3 bg-gray-950 rounded-2xl text-center space-y-0.5 border border-gray-901">
-                  <span className="text-[10px] text-gray-500 uppercase block font-bold font-mono tracking-wider">Board Privileges</span>
-                  <span className="text-xs font-bold text-slate-300 block pt-1">
-                    {isAdmin ? '🛡️ School Staff-Admin' : '✨ Parent/Student Contributor'}
+                <div className="p-3 bg-gray-950 rounded-2xl space-y-0.5 border border-gray-901">
+                  <span className="text-[10px] text-gray-500 uppercase block font-bold tracking-wider">Role</span>
+                  <span className="text-xs font-bold text-slate-300 block pt-1 uppercase">
+                    {isAdmin ? '🛡️ Admin' : '✨ Creator'}
                   </span>
                 </div>
               </div>
 
-              {/* Action Lists */}
+              {/* General Control triggers */}
               <div className="space-y-2 pt-2">
                 
                 <button
@@ -833,9 +826,9 @@ export default function App() {
                     setIsProfileDrawerOpen(false);
                     setIsShareModalOpen(true);
                   }}
-                  className="w-full py-2.5 px-4 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 rounded-xl text-xs font-semibold flex items-center justify-between transition cursor-pointer"
+                  className="w-full py-2.5 px-4 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 rounded-xl text-xs font-semibold flex items-center justify-between transition cursor-pointer font-mono uppercase"
                 >
-                  <span>Share App Setup / Send link</span>
+                  <span>App Install Links</span>
                   <span>➜</span>
                 </button>
 
@@ -847,7 +840,7 @@ export default function App() {
                   className="w-full py-2.5 px-4 bg-transparent hover:bg-slate-900 border border-gray-900 text-gray-400 hover:text-rose-400 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 cursor-pointer"
                 >
                   <LogOut size={13} />
-                  <span>Logout Board Session</span>
+                  <span>Logout Curator Session</span>
                 </button>
 
                 <button
@@ -864,10 +857,10 @@ export default function App() {
 
       </div>
 
-      {/* Elegant overlay AuthModal */}
+      {/* Authentication and setup Modal */}
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
 
-      {/* PWA share and installation Modal */}
+      {/* PWA asset share and setup Modal */}
       <ShareManifestModal 
         isOpen={isShareModalOpen} 
         onClose={() => setIsShareModalOpen(false)} 
