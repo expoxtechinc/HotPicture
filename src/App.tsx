@@ -31,6 +31,7 @@ import { Picture } from './types';
 import AddPicForm from './components/AddPicForm';
 import ModeratorQueue from './components/ModeratorQueue';
 import PicCard from './components/PicCard';
+import AuthModal from './components/AuthModal';
 
 const CATEGORIES = ['All', 'Cyberpunk', 'Scenic', 'Abstract', 'City', 'Animals', 'Cosmos', 'Minimalist', 'Other'];
 
@@ -38,6 +39,7 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // Connection validation
   const [connectionVerified, setConnectionVerified] = useState(false);
@@ -314,10 +316,10 @@ export default function App() {
               </div>
             ) : (
               <button
-                onClick={handleSignIn}
-                className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-medium px-4 py-2 rounded-xl text-xs flex items-center space-x-1.5 cursor-pointer shadow-md shadow-orange-500/10"
+                onClick={() => setIsAuthModalOpen(true)}
+                className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-4 py-2 rounded-xl text-xs flex items-center space-x-1.5 cursor-pointer shadow-md shadow-orange-500/10"
               >
-                <span>Login with Google</span>
+                <span>Sign In / Create Account</span>
               </button>
             )}
           </div>
@@ -356,13 +358,13 @@ export default function App() {
             <div className="text-4xl text-orange-400">🔒</div>
             <h2 className="text-lg font-semibold text-slate-100">Secure Space Locked</h2>
             <p className="text-xs text-gray-400 leading-relaxed">
-              You must sign in with your verified Google account to upload photos, track your submissions, and unlock interaction points.
+              You must sign in with your account to upload photos, track your submissions, and unlock interaction points.
             </p>
             <button
-              onClick={handleSignIn}
-              className="bg-gradient-to-r from-orange-500 to-red-500 text-white py-2.5 px-6 rounded-xl text-xs font-medium cursor-pointer"
+              onClick={() => setIsAuthModalOpen(true)}
+              className="bg-gradient-to-r from-orange-500 to-red-500 text-white py-2.5 px-6 rounded-xl text-xs font-semibold cursor-pointer transition hover:scale-102"
             >
-              Authenticate now
+              Sign In / Register now
             </button>
           </div>
         )}
@@ -505,6 +507,9 @@ export default function App() {
           <span>© 2026 HotPic. Developed for secure client environments.</span>
         </div>
       </footer>
+
+      {/* Elegant overlay AuthModal */}
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
     </div>
   );
 }

@@ -14,7 +14,7 @@ service cloud.firestore {
     }
 
     function isVerifiedUser() {
-      return isSignedIn() && request.auth.token.email_verified == true;
+      return isSignedIn() && request.auth.token.email != null;
     }
 
     // Bootstrapped Admin: Only user email luckyglobalnews@gmail.com is authorized as admin.
