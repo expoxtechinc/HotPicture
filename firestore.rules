@@ -14,12 +14,16 @@ service cloud.firestore {
     }
 
     function isVerifiedUser() {
-      return isSignedIn() && request.auth.token.email != null;
+      return request.auth != null && 
+             request.auth.token != null && 
+             request.auth.token.email != null;
     }
 
     // Bootstrapped Admin: Only user email luckyglobalnews@gmail.com is authorized as admin.
     function isAdmin() {
-      return isSignedIn() && request.auth.token.email == "luckyglobalnews@gmail.com";
+      return request.auth != null && 
+             request.auth.token != null && 
+             request.auth.token.email == "luckyglobalnews@gmail.com";
     }
 
     function isValidId(id) {
@@ -76,7 +80,7 @@ service cloud.firestore {
       // - Standard signed-in users can also view their own uploads.
       // - Admins can read (get/list) any picture (including pending and rejected ones).
       allow get: if (existing().status == 'approved') || (
-        isSignedIn() && (
+        request.auth != null && (
           existing().uploaderId == request.auth.uid || 
           isAdmin()
         )
@@ -84,7 +88,7 @@ service cloud.firestore {
 
       // List query level protection (prevents wide table scraping).
       allow list: if (resource.data.status == 'approved') || (
-        isSignedIn() && (
+        request.auth != null && (
           resource.data.uploaderId == request.auth.uid || 
           isAdmin()
         )
