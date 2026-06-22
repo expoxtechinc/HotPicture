@@ -25,13 +25,15 @@ import {
   Search, 
   Filter, 
   Loader2, 
-  Layers 
+  Layers,
+  Share2
 } from 'lucide-react';
 import { Picture } from './types';
 import AddPicForm from './components/AddPicForm';
 import ModeratorQueue from './components/ModeratorQueue';
 import PicCard from './components/PicCard';
 import AuthModal from './components/AuthModal';
+import ShareManifestModal from './components/ShareManifestModal';
 
 const CATEGORIES = ['All', 'Cyberpunk', 'Scenic', 'Abstract', 'City', 'Animals', 'Cosmos', 'Minimalist', 'Other'];
 
@@ -40,9 +42,32 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   // Connection validation
   const [connectionVerified, setConnectionVerified] = useState(false);
+
+  // Monitor Progressive Web App install prompt triggers
+  useEffect(() => {
+    const handleInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      console.log('Progressive Web App install eligibility detected.');
+    };
+    window.addEventListener('beforeinstallprompt', handleInstallPrompt);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleInstallPrompt);
+    };
+  }, []);
+
+  const handleTriggerInstall = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log('PWA installation prompt user status response:', outcome);
+    setDeferredPrompt(null);
+  };
 
   // State for pictures tabs & records
   const [activeTab, setActiveTab] = useState<'gallery' | 'my-uploads' | 'admin-board' | 'upload'>('gallery');
@@ -279,6 +304,16 @@ export default function App() {
                 <span>Audit</span>
               </button>
             )}
+
+            {/* Unique Share App Integration Trigger */}
+            <button
+              onClick={() => setIsShareModalOpen(true)}
+              className="flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border border-orange-500/30 shadow-sm shadow-orange-500/5"
+              title="Share or Install HotPic PWA"
+            >
+              <Share2 size={13} className="text-orange-400 shrink-0" />
+              <span>Share App</span>
+            </button>
           </nav>
 
           {/* User Profile Auth action */}
@@ -334,23 +369,47 @@ export default function App() {
 
       {/* Hero Accent Strip */}
       <div className="bg-gradient-to-b from-[#111319] to-transparent py-8 px-4 md:px-8 border-b border-gray-900">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="space-y-1">
             <h1 className="text-2xl md:text-3xl font-extrabold text-slate-100 tracking-tight flex items-center space-x-2">
               <span>Aesthetic Captures</span>
               <span className="text-lg">✨</span>
             </h1>
-            <p className="text-xs text-gray-400 mt-1 max-w-xl">
-              An elegant board of community curated photography. Join us by signing in, posting your best raw captures, and interacting with works of others. Uploader status takes effect instantly once approved!
+            <p className="text-xs text-gray-400 max-w-xl leading-relaxed">
+              An elegant board of community curated photography. Join us by signing in, posting your best raw captures, and sharing/installing the application onto your phone screen for instant accessibility!
             </p>
           </div>
           
-          {/* Admin Announcement Banner */}
-          {user && isAdmin && (
-            <div className="bg-red-500/10 border border-red-500/20 px-4 py-2 rounded-xl flex items-center space-x-3 font-sans">
-              <span className="text-rose-400 text-xs font-bold font-mono">🔧 AUDITING PRIVILEGES ENFORCED</span>
+          {/* Permanent interactive share card or Admin strip */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 shrink-0">
+            {user && isAdmin && (
+              <div className="bg-red-500/10 border border-red-500/20 px-4 py-3 rounded-xl flex items-center space-x-3 font-sans">
+                <span className="text-rose-400 text-xs font-bold font-mono">🔧 AUDITING PRIVILEGES ENFORCED</span>
+              </div>
+            )}
+            
+            <div className="bg-[#0f1115] border border-orange-500/20 p-4 rounded-xl flex items-center justify-between gap-4 max-w-sm">
+              <div className="space-y-0.5">
+                <div className="text-xs font-black text-slate-200 flex items-center gap-1.5 leading-none">
+                  <span className="flex h-2 w-2 relative shrink-0">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                  </span>
+                  <span>Install App & Share</span>
+                </div>
+                <p className="text-[10px] text-gray-400 leading-normal mt-1">
+                  Offline-ready. Direct WhatsApp, Telegram, and Xender sharing profiles!
+                </p>
+              </div>
+              <button
+                onClick={() => setIsShareModalOpen(true)}
+                className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shrink-0 text-white font-bold py-2 px-3 tracking-wide rounded-lg text-[10px] transition cursor-pointer shadow-md shadow-orange-500/10"
+              >
+                Launch Center
+              </button>
             </div>
-          )}
+          </div>
+
         </div>
       </div>
 
@@ -515,6 +574,14 @@ export default function App() {
 
       {/* Elegant overlay AuthModal */}
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+
+      {/* PWA share and installation Modal */}
+      <ShareManifestModal 
+        isOpen={isShareModalOpen} 
+        onClose={() => setIsShareModalOpen(false)} 
+        deferredPrompt={deferredPrompt}
+        onTriggerInstall={handleTriggerInstall}
+      />
     </div>
   );
 }
