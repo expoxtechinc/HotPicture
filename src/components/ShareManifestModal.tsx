@@ -9,7 +9,8 @@ import {
   Smartphone,
   Send,
   ExternalLink,
-  QrCode
+  QrCode,
+  GraduationCap
 } from 'lucide-react';
 
 interface ShareManifestModalProps {
@@ -27,13 +28,13 @@ export default function ShareManifestModal({
 }: ShareManifestModalProps) {
   const [copied, setCopied] = useState(false);
   const shareUrl = window.location.origin;
-  const appTitle = "HotPic - HotBrazzer Pic & HotXXXX Elite Gallery";
-  const shareText = `Check out HotPic! Beautiful aesthetic photos, cyberpunk backgrounds, scenic wallpapers, and premium photography. Install it on your phone now: ${shareUrl}`;
+  const appTitle = "Multee International School System (MISS) Portal";
+  const shareText = `Explore the official portal of Multee International School System (MISS) in Monrovia, Liberia. Browse news, TVET vocational training, academics, and activities: ${shareUrl}`;
 
   if (!isOpen) return null;
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(shareUrl || 'https://hotpic.gallery');
+    navigator.clipboard.writeText(shareUrl || 'https://miss-portal.org');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -42,7 +43,7 @@ export default function ShareManifestModal({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'HotPic Elite Gallery',
+          title: 'Multee Int\'l School System (MISS) Portal',
           text: shareText,
           url: shareUrl
         });
@@ -73,7 +74,7 @@ export default function ShareManifestModal({
         id="share-modal-container"
       >
         {/* Accent Bar */}
-        <div className="bg-gradient-to-r from-orange-500 via-rose-500 to-red-500 h-1.5 w-full" />
+        <div className="bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 h-1.5 w-full" />
         
         {/* Close */}
         <button 
@@ -86,20 +87,15 @@ export default function ShareManifestModal({
         <div className="p-6 md:p-8 space-y-6">
           {/* Header Area */}
           <div className="flex items-center space-x-4">
-            <div className="w-14 h-14 rounded-2xl border-2 border-orange-500/40 p-0.5 overflow-hidden shadow-lg bg-gray-950 shrink-0">
-              <img 
-                src="https://www.image2url.com/r2/default/images/1782122458339-80716311-65c7-48fb-91f5-2ba699bea415.jpg" 
-                alt="HotPic App Logo" 
-                className="w-full h-full object-cover rounded-xl"
-                referrerPolicy="no-referrer"
-              />
+            <div className="w-14 h-14 rounded-2xl border-2 border-orange-500/40 p-1 overflow-hidden shadow-lg bg-gray-950 shrink-0 flex items-center justify-center">
+              <GraduationCap className="w-8 h-8 text-orange-400" />
             </div>
             <div>
               <h3 className="text-xl font-bold text-slate-100 font-sans tracking-tight">
-                Install & Share HotPic
+                Install & Share MISS Portal
               </h3>
               <p className="text-xs text-orange-400 font-medium">
-                Add to your phone home screen & share with friends
+                Add to your phone home screen & share with parent networks
               </p>
             </div>
           </div>
@@ -111,20 +107,20 @@ export default function ShareManifestModal({
               <div>
                 <div className="flex items-center space-x-2 text-slate-200 font-semibold text-sm">
                   <Smartphone size={16} className="text-orange-400" />
-                  <span>Install on Device</span>
+                  <span>Install Web App</span>
                 </div>
                 <p className="text-[11px] text-gray-400 mt-1.5 leading-relaxed">
-                  Browse offline, save data storage, and enjoy standard app execution. No high download size!
+                  Browse activities offline, save bandwidth, and load the MISS portal instantly with single-tap home screen access!
                 </p>
               </div>
 
               {deferredPrompt ? (
                 <button
                   onClick={onTriggerInstall}
-                  className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-2 px-3 rounded-lg text-xs flex items-center justify-center space-x-1.5 cursor-pointer transition shadow-lg shadow-orange-500/20"
+                  className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold py-2 px-3 rounded-lg text-xs flex items-center justify-center space-x-1.5 cursor-pointer transition shadow-lg shadow-orange-500/20"
                 >
                   <Download size={14} />
-                  <span>Click to Install App</span>
+                  <span>Add school app to phone</span>
                 </button>
               ) : (
                 <div className="p-2.5 bg-gray-900 rounded-lg space-y-1.5">
@@ -133,8 +129,8 @@ export default function ShareManifestModal({
                     <span>How to Install:</span>
                   </div>
                   <ul className="text-[10px] text-gray-400 space-y-1 pl-4 list-disc font-sans">
-                    <li><strong className="text-slate-300">Android:</strong> Tap the browser menu (<strong className="text-slate-300">︙</strong>) & select <strong className="text-slate-300">"Install App"</strong> or <strong className="text-slate-300">"Add to Home Screen"</strong>.</li>
-                    <li><strong className="text-slate-300">iOS (Safari):</strong> Tap Share (<span className="text-blue-400 font-bold">⎙</span>) and click <strong className="text-indigo-400 font-bold">"Add to Home Screen"</strong>.</li>
+                    <li><strong className="text-slate-300">Android:</strong> Tap browser menu (<strong className="text-slate-300">︙</strong>) & select <strong className="text-slate-300">"Install App"</strong>.</li>
+                    <li><strong className="text-slate-300">iOS (Safari):</strong> Tap Share indicator (<span className="text-blue-400 font-bold">⎙</span>) and click <strong className="text-orange-400 font-bold">"Add to Home Screen"</strong>.</li>
                   </ul>
                 </div>
               )}
@@ -144,11 +140,11 @@ export default function ShareManifestModal({
             <div className="p-4 bg-gray-950 border border-gray-800/80 rounded-xl flex flex-col justify-between space-y-3">
               <div>
                 <div className="flex items-center space-x-2 text-slate-200 font-semibold text-sm">
-                  <Share2 size={16} className="text-rose-400" />
-                  <span>Xender & Offline Share</span>
+                  <Share2 size={16} className="text-amber-400" />
+                  <span>Xender & Offline Export</span>
                 </div>
                 <p className="text-[11px] text-gray-400 mt-1.5 leading-relaxed">
-                  To send this app through <strong className="text-slate-300">Xender, Bluetooth</strong>, or email, copy the installable web Link and send it to your friend's setup!
+                  To share via bluetooth hotspot, Xender setups, or local networks, copy the unique secure link!
                 </p>
               </div>
 
@@ -160,12 +156,12 @@ export default function ShareManifestModal({
                   {copied ? (
                     <>
                       <Check size={14} className="text-green-400" />
-                      <span className="text-green-400">Copied App Link!</span>
+                      <span className="text-green-400">Copied Portal Link!</span>
                     </>
                   ) : (
                     <>
                       <Copy size={13} />
-                      <span>Copy Install Link</span>
+                      <span>Copy Portal URL</span>
                     </>
                   )}
                 </button>
@@ -175,7 +171,7 @@ export default function ShareManifestModal({
                     className="w-full bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/20 text-orange-400 py-1.5 rounded-lg text-[10px] font-bold flex items-center justify-center space-x-1.5 transition cursor-pointer"
                   >
                     <Share2 size={12} />
-                    <span>Share with local apps</span>
+                    <span>Send via system apps</span>
                   </button>
                 )}
               </div>
@@ -186,7 +182,7 @@ export default function ShareManifestModal({
           {/* Social Platforms Links Grid */}
           <div className="space-y-2.5">
             <h4 className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">
-              Instant Web Distribution Channels
+              Web & Message Distribution Channels
             </h4>
             
             <div className="grid grid-cols-3 gap-2">
@@ -197,7 +193,7 @@ export default function ShareManifestModal({
                 rel="noopener noreferrer"
                 className="bg-[#2563eb]/10 hover:bg-[#2563eb]/20 border border-[#2563eb]/30 text-[#60a5fa] hover:text-[#93c5fd] py-2.5 rounded-xl text-xs font-bold text-center flex flex-col items-center justify-center space-y-1 transition duration-200"
               >
-                <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-[10px] font-black shrink-0">
+                <div className="w-6 h-6 rounded-full bg-green-600 text-white flex items-center justify-center text-[10px] font-black shrink-0">
                   WA
                 </div>
                 <span>WhatsApp</span>
@@ -221,7 +217,7 @@ export default function ShareManifestModal({
                 rel="noopener noreferrer"
                 className="bg-[#1e40af]/10 hover:bg-[#1e40af]/20 border border-[#1e40af]/30 text-blue-400 hover:text-blue-300 py-2.5 rounded-xl text-xs font-bold text-center flex flex-col items-center justify-center space-y-1 transition duration-200"
               >
-                <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-black shrink-0">
+                <div className="w-6 h-6 rounded-full bg-blue-700 text-white flex items-center justify-center text-xs font-black shrink-0">
                   f
                 </div>
                 <span>Facebook</span>
@@ -233,8 +229,8 @@ export default function ShareManifestModal({
           <div className="p-3 bg-gray-950 border border-gray-800 rounded-xl flex items-start space-x-2.5">
             <QrCode className="text-orange-400 shrink-0 mt-0.5" size={16} />
             <div className="text-[10px] text-gray-500 leading-relaxed font-mono">
-              <span className="text-gray-300 font-bold block mb-0.5">XENDER LOCAL TRANSER OPTION:</span>
-              Open Xender app, tap "Web Share" or "Set Hotspot Connection". On your computer or friend's device, scan the QR code or visit the local connection link to access and download standard web files instantly!
+              <span className="text-gray-300 font-bold block mb-0.5">XENDER LOCAL TRANSFER OPTION:</span>
+              Open Xender on your smartphone, tap Web-share, connect to local MISS computer hotspots, and share educational flyers or enrollment receipts with full integrity.
             </div>
           </div>
 

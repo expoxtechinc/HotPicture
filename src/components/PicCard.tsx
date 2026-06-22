@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { db, OperationType, handleFirestoreError } from '../firebase';
 import { doc, deleteDoc, writeBatch, serverTimestamp, onSnapshot } from 'firebase/firestore';
 import { Picture } from '../types';
-import { Heart, Trash2, Calendar, User, X, Download, Share2, ZoomIn, ZoomOut } from 'lucide-react';
+import { Heart, Trash2, Calendar, User, X, Download, Share2, ZoomIn, ZoomOut, Award, BookOpen } from 'lucide-react';
 
 interface PicCardProps {
   pic: Picture;
@@ -53,7 +53,7 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
 
   const handleLikeToggle = async () => {
     if (!currentUserUid) {
-      alert('Sign in to interact/like pictures!');
+      alert('Sign in to upvote and interact with school updates!');
       return;
     }
     if (loadingLike) return;
@@ -65,14 +65,12 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
 
     try {
       if (hasLiked) {
-        // Prepare Unlike operations
         batch.delete(likeDocRef);
         batch.update(picDocRef, {
           likes: Math.max(0, pic.likes - 1),
         });
         await batch.commit();
       } else {
-        // Prepare Like operations
         batch.set(likeDocRef, {
           id: currentUserUid,
           userId: currentUserUid,
@@ -92,7 +90,7 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this picture post permanently?')) {
+    if (!confirm('Are you sure you want to delete this school post permanently?')) {
       return;
     }
 
@@ -117,7 +115,6 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
   const isOwner = currentUserUid === pic.uploaderId;
   const showDelete = isOwner || isAdmin;
 
-  // Format creation date beautifully
   const getFormattedDate = () => {
     if (!pic.createdAt) return 'Recent';
     const dateObj = pic.createdAt.toDate ? pic.createdAt.toDate() : new Date(pic.createdAt);
@@ -130,7 +127,7 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
 
   return (
     <>
-      <div className="bg-[#0f1115] border border-gray-900 rounded-2xl overflow-hidden shadow-lg group hover:border-gray-800 transition-all duration-300 flex flex-col justify-between">
+      <div className="bg-[#0f1115] border border-gray-900 rounded-2xl overflow-hidden shadow-lg group hover:border-orange-500/35 transition-all duration-300 flex flex-col justify-between">
         <div>
           {/* Aspect Wrapper */}
           <div 
@@ -143,33 +140,34 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
               referrerPolicy="no-referrer"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
             />
-            {/* Tag Top Left */}
-            <span className="absolute top-3 left-3 bg-gray-950/85 backdrop-blur-md text-orange-400 border border-gray-900 rounded-full px-2.5 py-0.5 text-[9px] font-mono tracking-wider uppercase font-bold">
-              {pic.category}
+            
+            {/* Category tag */}
+            <span className="absolute top-3 left-3 bg-gray-950/90 backdrop-blur-md text-orange-400 border border-gray-800 rounded-lg px-2.5 py-0.5 text-[9px] font-mono tracking-wider uppercase font-bold">
+              {pic.category || 'General'}
             </span>
 
-            {/* Tap zoom indicator overlay */}
+            {/* Tap zoom overlay */}
             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-              <span className="px-3 py-1.5 bg-black/80 rounded-xl text-[9px] font-bold text-slate-200 border border-gray-900 select-none">
-                🔍 Double-click or Tap to View
+              <span className="px-3 py-1.5 bg-black/85 rounded-xl text-[9px] font-bold text-slate-200 border border-gray-900 select-none">
+                🔍 Click to View Full Details
               </span>
             </div>
 
-            {/* Show pending badge */}
+            {/* Pending & Rejected Indicator admin systems */}
             {pic.status === 'pending' && (
               <span className="absolute top-3 right-3 bg-yellow-500/10 backdrop-blur-md text-yellow-400 border border-yellow-500/35 rounded px-2 py-0.5 text-[8.5px] font-sans font-black uppercase tracking-wider">
-                Pending
+                Pending Staff Review
               </span>
             )}
             {pic.status === 'rejected' && (
               <span className="absolute top-3 right-3 bg-red-500/10 backdrop-blur-md text-red-400 border border-red-500/35 rounded px-2 py-0.5 text-[8.5px] font-sans font-black uppercase tracking-wider">
-                Rejected
+                Declined
               </span>
             )}
           </div>
 
-          {/* Contents */}
-          <div className="p-4 space-y-2">
+          {/* Core Post Contents */}
+          <div className="p-4 space-y-1.5">
             <div className="flex items-start justify-between gap-2">
               <h3 
                 onClick={() => setIsFullscreen(true)}
@@ -185,29 +183,29 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
                     handleDelete();
                   }}
                   className="text-gray-500 hover:text-rose-500 p-1 rounded-md hover:bg-gray-950 transition cursor-pointer"
-                  title="Delete Post"
+                  title="Remove Post"
                 >
                   <Trash2 size={13} />
                 </button>
               )}
             </div>
 
-            <p className="text-[10.5px] text-gray-500 leading-relaxed font-sans line-clamp-2">
-              {pic.description || 'No custom description provided for this raw capture.'}
+            <p className="text-[10.5px] text-gray-400 leading-relaxed font-sans line-clamp-2">
+              {pic.description || 'No additional description provided for this campus update.'}
             </p>
           </div>
         </div>
 
-        {/* Footer Meta info */}
-        <div className="px-4 pb-4 pt-2.5 border-t border-gray-950 flex items-center justify-between bg-[#0b0c10]/40">
+        {/* Card Footer with Meta Stats and Upvote button */}
+        <div className="px-4 pb-4 pt-2.5 border-t border-gray-900/60 flex items-center justify-between bg-[#0b0c10]/40">
           <div className="space-y-0.5 min-w-0 flex-1 mr-2">
             <div className="flex items-center space-x-1 text-[9.5px] text-gray-400 font-sans">
               <User size={9} className="text-gray-600 shrink-0" />
-              <span className="truncate text-gray-400 font-medium">
+              <span className="truncate text-gray-300 font-medium">
                 {pic.uploaderName}
               </span>
               {pic.uploaderRole === 'admin' && (
-                <span className="bg-red-500/10 text-red-500 border border-red-500/20 text-[7px] font-mono rounded px-1 shrink-0">
+                <span className="bg-orange-500/10 text-orange-400 border border-orange-500/20 text-[7px] font-mono rounded px-1 shrink-0 font-bold uppercase">
                   Staff
                 </span>
               )}
@@ -218,7 +216,7 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
             </div>
           </div>
 
-          {/* Like trigger button */}
+          {/* Like upvote trigger */}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -226,11 +224,11 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
             }}
             className={`flex items-center space-x-1 px-2.5 py-1 rounded-full text-[10px] font-bold cursor-pointer transition shrink-0 ${
               hasLiked
-                ? 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/15'
+                ? 'bg-orange-500/20 text-orange-400 border border-orange-500/40 hover:bg-orange-500/30'
                 : 'bg-gray-950 hover:bg-gray-900 text-slate-400 border border-gray-900'
             }`}
           >
-            <Heart size={10} className={hasLiked ? 'fill-current' : ''} />
+            <Heart size={10} className={hasLiked ? 'fill-current text-orange-400' : ''} />
             <span>{pic.likes}</span>
           </button>
         </div>
@@ -253,14 +251,14 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
           >
             <div className="flex items-center space-x-3 max-w-[65%]">
               <div className="w-8 h-8 rounded-lg overflow-hidden bg-gray-950 flex items-center justify-center text-[10px] font-mono font-black text-orange-400 border border-orange-500/30 shrink-0 select-none">
-                {pic.category.substring(0, 2).toUpperCase()}
+                {pic.category ? pic.category.substring(0, 2).toUpperCase() : 'MI'}
               </div>
               <div className="min-w-0">
                 <h4 className="text-slate-100 font-black text-xs md:text-sm tracking-tight truncate leading-tight">
                   {pic.title}
                 </h4>
-                <span className="text-[9px] text-gray-400 block mt-0.5 truncate uppercase tracking-wider font-mono">
-                  Curated Capture • #{pic.category}
+                <span className="text-[9px] text-orange-400 block mt-0.5 truncate uppercase tracking-wider font-mono">
+                  MISS • #{pic.category || 'School Update'}
                 </span>
               </div>
             </div>
@@ -271,7 +269,7 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
               <button
                 onClick={() => setIsZoomed(!isZoomed)}
                 className="p-1.5 bg-gray-900 border border-gray-800 text-slate-300 hover:text-orange-400 rounded-lg transition shrink-0 cursor-pointer"
-                title="Toggle Digital Zoom"
+                title="Toggle Zoom"
               >
                 {isZoomed ? <ZoomOut size={13} /> : <ZoomIn size={13} />}
               </button>
@@ -284,19 +282,19 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
                     ? 'bg-emerald-950/80 border-emerald-800 text-emerald-400' 
                     : 'bg-gray-900 border-gray-800 text-slate-300 hover:text-orange-400'
                 }`}
-                title="Copy secure link to share"
+                title="Copy event link"
               >
                 <Share2 size={13} />
               </button>
 
-              {/* Download original image */}
+              {/* View/Download original image */}
               <a
                 href={pic.imageUrl}
                 target="_blank"
                 rel="noreferrer"
-                download={pic.title || "hotpic"}
+                download={pic.title || "mis-post"}
                 className="p-1.5 bg-gray-900 hover:bg-orange-500 text-slate-300 hover:text-white border border-gray-800 hover:border-orange-500 rounded-lg transition shrink-0"
-                title="Download file"
+                title="Download Attachment Wood"
                 onClick={(e) => e.stopPropagation()}
               >
                 <Download size={13} />
@@ -319,7 +317,7 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
           {/* Interactive Image Container Area */}
           <div className="flex-1 w-full max-w-lg mx-auto flex items-center justify-center p-4 relative select-none">
             <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full text-[8px] text-gray-400 font-mono tracking-widest uppercase z-20 pointer-events-none">
-              {isZoomed ? 'ZOOMED MODE' : 'TAP PICTURE TO ZOOM'}
+              {isZoomed ? 'ZOOMED VIEW' : 'TAP PHOTO FOR DETAIL FOCUS'}
             </div>
 
             <div 
@@ -345,10 +343,10 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
             className="w-full bg-gradient-to-t from-black/95 via-black/80 to-transparent p-5 shrink-0 z-10"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="max-w-md mx-auto space-y-4">
+            <div className="max-w-lg mx-auto space-y-4">
               <div className="flex items-center justify-between gap-3 border-b border-gray-900 pb-3">
                 <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-400 to-red-500 text-white flex items-center justify-center font-black text-[11px] uppercase">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-400 to-amber-500 text-white flex items-center justify-center font-black text-[11px] uppercase">
                     {pic.uploaderName.substring(0, 1)}
                   </div>
                   <div>
@@ -366,42 +364,42 @@ export default function PicCard({ pic, currentUserUid, isAdmin }: PicCardProps) 
                     onClick={handleLikeToggle}
                     className={`flex items-center space-x-1 px-3 py-1.5 rounded-xl text-[10px] font-black transition duration-200 cursor-pointer ${
                       hasLiked
-                        ? 'bg-red-500 text-white'
+                        ? 'bg-orange-500 text-white'
                         : 'bg-gray-900 border border-gray-800 text-slate-300 hover:text-white'
                     }`}
                   >
-                    <Heart size={11} className={hasLiked ? 'fill-current' : ''} />
-                    <span>{pic.likes} LIKES</span>
+                    <Heart size={11} className={hasLiked ? 'fill-current text-white' : ''} />
+                    <span>{pic.likes} UPVOTES</span>
                   </button>
                 </div>
               </div>
 
               {/* Caption Description text body */}
-              <div className="space-y-1">
-                <p className="text-[11px] text-gray-300 leading-relaxed font-sans select-text">
-                  {pic.description || 'No custom description was submitted with this capture.'}
+              <div className="space-y-1.5">
+                <p className="text-[11.5px] text-gray-300 leading-relaxed font-sans select-text">
+                  {pic.description || 'No detailed description was submitted with this campus update.'}
                 </p>
                 
                 <div className="flex flex-wrap gap-1.5 pt-1">
-                  <span className="text-[8px] bg-orange-500/10 text-orange-400 px-2 py-0.5 rounded border border-orange-500/10 font-bold font-mono uppercase">
-                    #{pic.category}
+                  <span className="text-[8px] bg-orange-500/10 text-orange-400 px-2 py-0.5 rounded border border-orange-500/20 font-bold font-mono uppercase">
+                    #{pic.category || 'GENERAL'}
                   </span>
-                  <span className="text-[8px] bg-gray-950 text-gray-500 px-2 py-0.5 rounded border border-gray-900 font-mono">
-                    #AESTHETIC
+                  <span className="text-[8px] bg-gray-950 text-gray-500 px-2 py-0.5 rounded border border-gray-900 font-mono uppercase">
+                    #MONROVIA_LIBERIA
                   </span>
-                  <span className="text-[8px] bg-gray-950 text-gray-500 px-2 py-0.5 rounded border border-gray-900 font-mono">
-                    #RAW_CAPTURE
+                  <span className="text-[8px] bg-gray-950 text-gray-500 px-2 py-0.5 rounded border border-gray-900 font-mono uppercase">
+                    #MULTEE_MISS
                   </span>
                 </div>
               </div>
 
               {copiedShare ? (
                 <div className="text-center text-[9px] text-emerald-400 font-bold font-mono py-1.5 bg-emerald-500/10 rounded-lg animate-pulse border border-emerald-500/20">
-                  ✓ Original Image URL copied with secure Referrer policy wrapper!
+                  ✓ Document/photo link has been successfully copied to clipboard.
                 </div>
               ) : (
                 <div className="text-center text-[8.5px] text-gray-600 font-mono">
-                  Secure Cloud Storage ID: {pic.id} • Verified Gatekeeper Active
+                  MISS Database ID Ref: {pic.id} • Secure Gatekeeper Active
                 </div>
               )}
             </div>
