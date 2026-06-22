@@ -9,15 +9,15 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://www.image2url.com/r2/default/images/1782122458339-80716311-65c7-48fb-91f5-2ba699bea415.jpg",
+      "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://www.image2url.com/r2/default/images/1782122458339-80716311-65c7-48fb-91f5-2ba699bea415.jpg",
+      "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]

@@ -1,0 +1,11 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Exclude private app administrative tabs and internal query parameters
+Disallow: /?*tab=moderator
+Disallow: /?*tab=add
+Disallow: /admin
+
+# Point to sitemap
+Sitemap: https://hotxxxpic.vercel.app/sitemap.xml

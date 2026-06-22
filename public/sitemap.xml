@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Main Home Page URL -->
+  <url>
+    <loc>https://hotxxxpic.vercel.app/</loc>
+    <lastmod>2026-06-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <!-- Cyberpunk Category URL -->
+  <url>
+    <loc>https://hotxxxpic.vercel.app/?category=Cyberpunk</loc>
+    <lastmod>2026-06-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <!-- Scenery Category URL -->
+  <url>
+    <loc>https://hotxxxpic.vercel.app/?category=Scenery</loc>
+    <lastmod>2026-06-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <!-- Abstract Category URL -->
+  <url>
+    <loc>https://hotxxxpic.vercel.app/?category=Abstract</loc>
+    <lastmod>2026-06-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <!-- Girls Category URL -->
+  <url>
+    <loc>https://hotxxxpic.vercel.app/?category=Girls</loc>
+    <lastmod>2026-06-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>
