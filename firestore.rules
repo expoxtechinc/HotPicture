@@ -1,0 +1,146 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. Global Safety Net - Default Deny Catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- REUSABLE SECURITY PRIMITIVES & HELPERS ---
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    // Bootstrapped Admin: Only user email luckyglobalnews@gmail.com is authorized as admin.
+    function isAdmin() {
+      return isVerifiedUser() && request.auth.token.email == "luckyglobalnews@gmail.com";
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- CREATION SCHEMA VALIDATION FOR PICTURES ---
+    function isValidPictureCreate(data) {
+      return data.keys().hasAll([
+               'id', 'title', 'description', 'imageUrl', 'uploaderId', 
+               'uploaderName', 'uploaderEmail', 'uploaderRole', 'status', 
+               'createdAt', 'likes', 'category'
+             ]) &&
+             data.keys().size() == 12 &&
+             data.id is string && data.id.size() <= 128 &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 100 &&
+             data.description is string && data.description.size() <= 1000 &&
+             data.imageUrl is string && data.imageUrl.size() <= 2048 &&
+             data.uploaderId == request.auth.uid &&
+             data.uploaderEmail == request.auth.token.email &&
+             data.createdAt == request.time &&
+             data.likes == 0 &&
+             data.category is string && data.category.size() <= 50 &&
+             (
+               (isAdmin() && data.uploaderRole == 'admin' && data.status == 'approved') ||
+               (!isAdmin() && data.uploaderRole == 'user' && data.status == 'pending')
+             );
+    }
+
+    // --- UPDATE IMMUTABILITY VALIDATION FOR PICTURES ---
+    function isValidPictureUpdateState(ex, inc) {
+      return inc.id == ex.id &&
+             inc.title == ex.title &&
+             inc.description == ex.description &&
+             inc.imageUrl == ex.imageUrl &&
+             inc.uploaderId == ex.uploaderId &&
+             inc.uploaderEmail == ex.uploaderEmail &&
+             inc.uploaderRole == ex.uploaderRole &&
+             inc.createdAt == ex.createdAt &&
+             inc.category == ex.category;
+    }
+
+    // --- PICTURES RULES ---
+    match /pictures/{pictureId} {
+      
+      // Read Operations:
+      // - Standard users can only view 'approved' pictures or their own uploads.
+      // - Admins can read (get/list) any picture (including pending and rejected ones).
+      allow get: if isSignedIn() && (
+        existing().status == 'approved' || 
+        existing().uploaderId == request.auth.uid || 
+        isAdmin()
+      );
+
+      // List query level protection (prevents wide table scraping).
+      allow list: if isSignedIn() && (
+        resource.data.status == 'approved' || 
+        resource.data.uploaderId == request.auth.uid || 
+        isAdmin()
+      );
+
+      // Create Operation:
+      allow create: if isVerifiedUser() && 
+                    isValidId(pictureId) && 
+                    pictureId == incoming().id && 
+                    isValidPictureCreate(incoming());
+
+      // Update Operation (Action-Based Tiered Updates):
+      allow update: if isVerifiedUser() && 
+                    isValidId(pictureId) && 
+                    isValidPictureUpdateState(existing(), incoming()) && 
+                    (
+                      // Action A: Incremental Sym-Like Action (any verified user can increment or decrement likes field by 1)
+                      (
+                        incoming().diff(existing()).affectedKeys().hasOnly(['likes']) && 
+                        (incoming().likes == existing().likes + 1 || incoming().likes == existing().likes - 1)
+                      ) ||
+                      
+                      // Action B: Admin Review Action (Status revision and moderator assignment)
+                      (
+                        isAdmin() && 
+                        incoming().diff(existing()).affectedKeys().hasOnly(['status', 'approvedBy', 'approvedAt']) &&
+                        (incoming().status == 'approved' || incoming().status == 'rejected') &&
+                        incoming().approvedBy == request.auth.uid &&
+                        incoming().approvedAt == request.time
+                      )
+                    );
+
+      // Delete Operation: allowed ONLY for the uploader themselves or the admin
+      allow delete: if isVerifiedUser() && (
+        existing().uploaderId == request.auth.uid || 
+        isAdmin()
+      );
+
+      // --- LIKES SUB-COLLECTION ---
+      // Tracks unique user likes for a picture document.
+      match /likes/{userId} {
+        allow get: if isSignedIn();
+        allow list: if isSignedIn();
+        
+        allow create: if isVerifiedUser() && 
+                      isValidId(userId) && 
+                      userId == request.auth.uid &&
+                      incoming().keys().hasAll(['id', 'userId', 'pictureId', 'createdAt']) &&
+                      incoming().keys().size() == 4 &&
+                      incoming().id == userId &&
+                      incoming().userId == request.auth.uid &&
+                      incoming().pictureId == pictureId &&
+                      incoming().createdAt == request.time;
+
+        allow delete: if isVerifiedUser() && 
+                      userId == request.auth.uid;
+      }
+    }
+  }
+}

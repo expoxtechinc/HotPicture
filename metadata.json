@@ -1,0 +1,6 @@
+{
+  "name": "HotPic",
+  "description": "An image-sharing board where administrators moderate user uploads before they are displayed to the public.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

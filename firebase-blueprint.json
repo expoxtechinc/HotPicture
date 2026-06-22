@@ -1,0 +1,104 @@
+{
+  "entities": {
+    "Picture": {
+      "title": "Picture",
+      "description": "An uploaded image post containing metadata, uploader info, and approval status.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier of the picture document."
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the uploaded picture."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description or story about the picture."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "The URL of the displayed image, either external or from presets."
+        },
+        "uploaderId": {
+          "type": "string",
+          "description": "The Firebase Auth UID of the uploader."
+        },
+        "uploaderName": {
+          "type": "string",
+          "description": "The name of the uploader."
+        },
+        "uploaderEmail": {
+          "type": "string",
+          "description": "The email of the uploader."
+        },
+        "uploaderRole": {
+          "type": "string",
+          "enum": ["user", "admin"],
+          "description": "Role of the uploader at the time of uploading."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "approved", "rejected"],
+          "description": "Approval status of the picture. Admin uploads are pre-approved."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the picture was uploaded."
+        },
+        "approvedBy": {
+          "type": "string",
+          "description": "The UID of the admin who approved this picture."
+        },
+        "approvedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the picture was approved."
+        },
+        "likes": {
+          "type": "number",
+          "description": "Number of likes this picture has received."
+        },
+        "category": {
+          "type": "string",
+          "description": "Category tag of the picture (e.g. Nature, Travel, City, Abstract, Cyberpunk)."
+        }
+      },
+      "required": ["id", "title", "imageUrl", "uploaderId", "uploaderEmail", "status", "createdAt", "likes"]
+    },
+    "Like": {
+      "title": "Like",
+      "description": "Tracks which user liked which picture to prevent duplicate likes.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Format: {userId}_{pictureId}"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "pictureId": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "userId", "pictureId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/pictures/{pictureId}": {
+      "schema": "Picture",
+      "description": "The collection of uploaded pictures."
+    },
+    "/pictures/{pictureId}/likes/{likeId}": {
+      "schema": "Like",
+      "description": "Tracks users who liked this picture."
+    }
+  }
+}
