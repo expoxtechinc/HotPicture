@@ -19,7 +19,7 @@ service cloud.firestore {
 
     // Bootstrapped Admin: Only user email luckyglobalnews@gmail.com is authorized as admin.
     function isAdmin() {
-      return isVerifiedUser() && request.auth.token.email == "luckyglobalnews@gmail.com";
+      return isSignedIn() && request.auth.token.email == "luckyglobalnews@gmail.com";
     }
 
     function isValidId(id) {
@@ -41,13 +41,11 @@ service cloud.firestore {
                'uploaderName', 'uploaderEmail', 'uploaderRole', 'status', 
                'createdAt', 'likes', 'category'
              ]) &&
-             data.keys().size() == 12 &&
              data.id is string && data.id.size() <= 128 &&
              data.title is string && data.title.size() >= 1 && data.title.size() <= 100 &&
              data.description is string && data.description.size() <= 1000 &&
              data.imageUrl is string && data.imageUrl.size() <= 2048 &&
              data.uploaderId == request.auth.uid &&
-             data.uploaderEmail == request.auth.token.email &&
              data.createdAt == request.time &&
              data.likes == 0 &&
              data.category is string && data.category.size() <= 50 &&
@@ -74,19 +72,22 @@ service cloud.firestore {
     match /pictures/{pictureId} {
       
       // Read Operations:
-      // - Standard users can only view 'approved' pictures or their own uploads.
+      // - Standard users and guests can view 'approved' pictures.
+      // - Standard signed-in users can also view their own uploads.
       // - Admins can read (get/list) any picture (including pending and rejected ones).
-      allow get: if isSignedIn() && (
-        existing().status == 'approved' || 
-        existing().uploaderId == request.auth.uid || 
-        isAdmin()
+      allow get: if (existing().status == 'approved') || (
+        isSignedIn() && (
+          existing().uploaderId == request.auth.uid || 
+          isAdmin()
+        )
       );
 
       // List query level protection (prevents wide table scraping).
-      allow list: if isSignedIn() && (
-        resource.data.status == 'approved' || 
-        resource.data.uploaderId == request.auth.uid || 
-        isAdmin()
+      allow list: if (resource.data.status == 'approved') || (
+        isSignedIn() && (
+          resource.data.uploaderId == request.auth.uid || 
+          isAdmin()
+        )
       );
 
       // Create Operation:
