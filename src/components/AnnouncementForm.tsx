@@ -75,22 +75,36 @@ export const AnnouncementForm: React.FC<AnnouncementFormProps> = ({ publisherEma
         resolvedCategory = 'Video';
       }
 
-      const payload: Announcement = {
+      // Construct database payload keeping keys strictly defined with non-empty string values.
+      // Firebase throws local errors on 'undefined' values before the request reaches the server.
+      const payload: any = {
         id: annId,
         title: title.trim(),
         content: content.trim(),
         category: resolvedCategory,
         mediaType,
-        imageUrl: imageUrl.trim() || undefined,
-        videoUrl: mediaType === 'video' ? videoUrl.trim() : undefined,
-        publisherName: publisherName.trim() || 'Office of the Principal',
         publisherEmail,
-        createdAt: serverTimestamp(), 
+        createdAt: serverTimestamp(),
       };
+
+      const trimmedImg = imageUrl.trim();
+      if (trimmedImg) {
+        payload.imageUrl = trimmedImg;
+      }
+
+      const trimmedVid = videoUrl.trim();
+      if (mediaType === 'video' && trimmedVid) {
+        payload.videoUrl = trimmedVid;
+      }
+
+      const trimmedPub = publisherName.trim();
+      if (trimmedPub) {
+        payload.publisherName = trimmedPub;
+      }
 
       await setDoc(docRef, payload);
       setSuccess(true);
-      onSuccess(payload);
+      onSuccess(payload as Announcement);
 
       // Clean core inputs
       setTitle('');
@@ -100,7 +114,12 @@ export const AnnouncementForm: React.FC<AnnouncementFormProps> = ({ publisherEma
       
       setTimeout(() => setSuccess(false), 3500);
     } catch (err: any) {
-      setErrorMsg('Access blocked. Check that you are authenticated as verifying luckyglobalnews@gmail.com.');
+      const errStr = String(err?.message || err);
+      if (errStr.includes('permission') || errStr.includes('PERMISSION_DENIED') || errStr.includes('permission-denied')) {
+        setErrorMsg('Access blocked. Check that you are authenticated as verifying luckyglobalnews@gmail.com.');
+      } else {
+        setErrorMsg(`Failed to publish: ${err?.message || 'Unknown network error. Please try again.'}`);
+      }
       try {
         handleFirestoreError(err, OperationType.CREATE, `announcements/${annId}`);
       } catch (logErr) {}
