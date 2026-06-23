@@ -17,7 +17,8 @@ service cloud.firestore {
     function isAdmin() {
       return request.auth != null && 
              request.auth.token != null && 
-             request.auth.token.email == "luckyglobalnews@gmail.com";
+             request.auth.token.email == "luckyglobalnews@gmail.com" &&
+             request.auth.token.email_verified == true;
     }
 
     function isValidId(id) {
@@ -40,7 +41,11 @@ service cloud.firestore {
              data.content is string && data.content.size() >= 1 && data.content.size() <= 5000 &&
              data.category is string && data.category.size() >= 1 && data.category.size() <= 50 &&
              data.publisherEmail == "luckyglobalnews@gmail.com" &&
-             data.createdAt == request.time;
+             data.createdAt == request.time &&
+             (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 1000)) &&
+             (!('videoUrl' in data) || (data.videoUrl is string && data.videoUrl.size() <= 1000)) &&
+             (!('mediaType' in data) || (data.mediaType in ['text', 'image', 'video'])) &&
+             (!('publisherName' in data) || (data.publisherName is string && data.publisherName.size() <= 100));
     }
 
     match /announcements/{announcementId} {
@@ -80,6 +85,26 @@ service cloud.firestore {
 
       // Only authenticated admins can read, list, update or delete student queries and interest messages
       allow read, update, delete: if isAdmin();
+    }
+
+    // --- STUDENTS ROSTER RULES ---
+    function isValidStudentRecord(data) {
+      return data.keys().hasAll(['id', 'fullName', 'email', 'parentPhone', 'gradeOrTrack', 'status', 'registrationFeesPaid', 'tuitionFeesTotal', 'academicTerm', 'createdAt']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.fullName is string && data.fullName.size() >= 1 && data.fullName.size() <= 150 &&
+             data.email is string && data.email.size() >= 1 && data.email.size() <= 100 &&
+             data.parentPhone is string && data.parentPhone.size() >= 1 && data.parentPhone.size() <= 40 &&
+             data.gradeOrTrack is string && data.gradeOrTrack.size() >= 1 && data.gradeOrTrack.size() <= 100 &&
+             data.status in ['pending_requirements', 'enrolled', 'completed', 'withdrawn'] &&
+             data.registrationFeesPaid is number && data.registrationFeesPaid >= 0 &&
+             data.tuitionFeesTotal is number && data.tuitionFeesTotal >= 0 &&
+             data.academicTerm is string && data.academicTerm.size() >= 1 && data.academicTerm.size() <= 50 &&
+             data.createdAt == request.time;
+    }
+
+    match /students/{studentId} {
+      // Only authenticated admins have complete visibility and edit controls on registry rosters
+      allow read, write: if isAdmin();
     }
   }
 }

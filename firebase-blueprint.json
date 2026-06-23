@@ -2,7 +2,7 @@
   "entities": {
     "Announcement": {
       "title": "Announcement",
-      "description": "A school announcement, news update, or activity published by administrators.",
+      "description": "A school announcement, news update, video lesson, gallery photo, or activity published by administrators.",
       "type": "object",
       "properties": {
         "id": {
@@ -21,9 +21,18 @@
           "type": "string",
           "description": "An optional external URL of an associated photo."
         },
+        "videoUrl": {
+          "type": "string",
+          "description": "An optional external URL of an associated Youtube video."
+        },
+        "mediaType": {
+          "type": "string",
+          "enum": ["text", "image", "video"],
+          "description": "Specifies rendering layout for media galleries."
+        },
         "category": {
           "type": "string",
-          "description": "Category of update (e.g. News, Event, TVET, Admission)."
+          "description": "Category of update (e.g. News, Event, TVET, Admission, Gallery)."
         },
         "publisherName": {
           "type": "string",
@@ -78,16 +87,70 @@
         }
       },
       "required": ["id", "name", "email", "subject", "message", "status", "createdAt"]
+    },
+    "StudentRecord": {
+      "title": "StudentRecord",
+      "description": "Real student enrollment profiles managed by administrators.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique record identifier."
+        },
+        "fullName": {
+          "type": "string",
+          "description": "Full name of the student."
+        },
+        "email": {
+          "type": "string",
+          "description": "Primary parent email address."
+        },
+        "parentPhone": {
+          "type": "string",
+          "description": "Parent mobile contact line."
+        },
+        "gradeOrTrack": {
+          "type": "string",
+          "description": "Active grade level or professional TVET track."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending_requirements", "enrolled", "completed", "withdrawn"],
+          "description": "Institutional registry status."
+        },
+        "registrationFeesPaid": {
+          "type": "number",
+          "description": "Amount paid for entrance registration in USD."
+        },
+        "tuitionFeesTotal": {
+          "type": "number",
+          "description": "Allocated annual tuition package in USD."
+        },
+        "academicTerm": {
+          "type": "string",
+          "description": "Target school session catalog."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Record creation timestamp."
+        }
+      },
+      "required": ["id", "fullName", "email", "parentPhone", "gradeOrTrack", "status", "registrationFeesPaid", "tuitionFeesTotal", "academicTerm", "createdAt"]
     }
   },
   "firestore": {
     "/announcements/{announcementId}": {
       "schema": "Announcement",
-      "description": "Collection of published school updates, news, and activities."
+      "description": "Collection of published school updates, news, video lectures, and media galleries."
     },
     "/inquiries/{inquiryId}": {
       "schema": "Inquiry",
       "description": "Visitor contact inquiries and school registration requests."
+    },
+    "/students/{studentId}": {
+      "schema": "StudentRecord",
+      "description": "Registred student roster profiles managed securely by the principal."
     }
   }
 }
