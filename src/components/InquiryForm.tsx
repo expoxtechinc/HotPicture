@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { db, handleFirestoreError, OperationType } from '../firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { Mail, Phone, Clock, MapPin, Send, CheckCircle, AlertTriangle } from 'lucide-react';
 
 export const InquiryForm: React.FC = () => {
@@ -36,7 +36,7 @@ export const InquiryForm: React.FC = () => {
         subject: subject.trim(),
         message: message.trim(),
         status: 'unread',
-        createdAt: new Date(), // this will be evaluated as a Timestamp or handled on the client
+        createdAt: serverTimestamp(),
       };
 
       await setDoc(docRef, payload);

@@ -7,7 +7,8 @@ import {
   doc, 
   setDoc, 
   deleteDoc, 
-  updateDoc 
+  updateDoc,
+  serverTimestamp 
 } from 'firebase/firestore';
 import { 
   Users, 
@@ -117,7 +118,7 @@ export const AdminAnalytics: React.FC<AdminAnalyticsProps> = ({
         registrationFeesPaid: Number(newFeesPaid),
         tuitionFeesTotal: Number(newTotalFees),
         academicTerm: '2026/2027 Term A',
-        createdAt: new Date(),
+        createdAt: serverTimestamp(),
       };
 
       await setDoc(docRef, payload);
@@ -191,7 +192,7 @@ export const AdminAnalytics: React.FC<AdminAnalyticsProps> = ({
           registrationFeesPaid: 45,
           tuitionFeesTotal: m.fees,
           academicTerm: '2026/2027 Term A',
-          createdAt: new Date(),
+          createdAt: serverTimestamp(),
         };
         await setDoc(doc(db, 'students', stdId), payload);
       }

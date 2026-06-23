@@ -92,7 +92,7 @@ service cloud.firestore {
       return data.keys().hasAll(['id', 'fullName', 'email', 'parentPhone', 'gradeOrTrack', 'status', 'registrationFeesPaid', 'tuitionFeesTotal', 'academicTerm', 'createdAt']) &&
              data.id is string && data.id.size() <= 128 &&
              data.fullName is string && data.fullName.size() >= 1 && data.fullName.size() <= 150 &&
-             data.email is string && data.email.size() >= 1 && data.email.size() <= 100 &&
+             data.email is string && data.email.size() >= 1 && data.email.size() <= 105 &&
              data.parentPhone is string && data.parentPhone.size() >= 1 && data.parentPhone.size() <= 40 &&
              data.gradeOrTrack is string && data.gradeOrTrack.size() >= 1 && data.gradeOrTrack.size() <= 100 &&
              data.status in ['pending_requirements', 'enrolled', 'completed', 'withdrawn'] &&
@@ -105,6 +105,64 @@ service cloud.firestore {
     match /students/{studentId} {
       // Only authenticated admins have complete visibility and edit controls on registry rosters
       allow read, write: if isAdmin();
+    }
+
+    // --- PICTURES RULES (FOR COMPLIANCE & ZERO-TRUST SECURITY) ---
+    function isValidPicture(data) {
+      return data.keys().hasAll(['id', 'title', 'description', 'imageUrl', 'uploaderId', 'uploaderName', 'uploaderEmail', 'uploaderRole', 'status', 'createdAt', 'likes', 'category']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 150 &&
+             data.description is string && data.description.size() <= 1000 &&
+             data.imageUrl is string && data.imageUrl.size() <= 1000 &&
+             data.uploaderId == request.auth.uid &&
+             data.uploaderEmail == request.auth.token.email &&
+             (data.uploaderRole == 'admin' ? isAdmin() : data.uploaderRole == 'user') &&
+             (data.status == 'approved' ? isAdmin() : data.status == 'pending') &&
+             data.createdAt == request.time &&
+             data.likes == 0 &&
+             data.category is string && data.category.size() <= 100;
+    }
+
+    match /pictures/{pictureId} {
+      // 8. Secure Reads: Non-approved pictures are completely hidden from the public view and other standard users. 
+      // Only the uploader or an admin can access a pending or rejected picture.
+      allow get, list: if existing().status == 'approved' || 
+                          (isSignedIn() && existing().uploaderId == request.auth.uid) || 
+                          isAdmin();
+
+      // Anyone (who is email-verified authenticated user) can create pictures
+      allow create: if isSignedIn() && 
+                    request.auth.token.email_verified == true && 
+                    isValidId(pictureId) && 
+                    pictureId == incoming().id && 
+                    isValidPicture(incoming());
+
+      // Update can be either a Like dynamic action by other verified users or a Review action by admins
+      allow update: if isSignedIn() && 
+                    request.auth.token.email_verified == true && 
+                    isValidId(pictureId) && (
+                      // Action: Like (only modifying likes count by +/- 1 or same)
+                      (incoming().diff(existing()).affectedKeys().hasOnly(['likes']) && 
+                       incoming().likes is number && 
+                       (incoming().likes == existing().likes + 1 || incoming().likes == existing().likes - 1 || incoming().likes == existing().likes)) ||
+                      // Action: Review (admins modifying approval status & stamp details)
+                      (isAdmin() && 
+                       incoming().diff(existing()).affectedKeys().hasOnly(['status', 'approvedBy', 'approvedAt']) && 
+                       incoming().status in ['approved', 'rejected', 'pending'] &&
+                       incoming().approvedBy == request.auth.uid &&
+                       incoming().approvedAt == request.time)
+                    );
+
+      // Only uploader or admin can delete pictures
+      allow delete: if isAdmin() || (isSignedIn() && existing().uploaderId == request.auth.uid);
+
+      // Subcollection for likes: Single-Like constraint
+      match /likes/{likeUserId} {
+        allow read: if true;
+        allow create, delete: if isSignedIn() && 
+                              request.auth.token.email_verified == true && 
+                              likeUserId == request.auth.uid;
+      }
     }
   }
 }

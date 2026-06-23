@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { db, handleFirestoreError, OperationType } from '../firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { 
   Plus, 
   Check, 
@@ -85,7 +85,7 @@ export const AnnouncementForm: React.FC<AnnouncementFormProps> = ({ publisherEma
         videoUrl: mediaType === 'video' ? videoUrl.trim() : undefined,
         publisherName: publisherName.trim() || 'Office of the Principal',
         publisherEmail,
-        createdAt: new Date(), 
+        createdAt: serverTimestamp(), 
       };
 
       await setDoc(docRef, payload);

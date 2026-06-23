@@ -137,6 +137,64 @@
         }
       },
       "required": ["id", "fullName", "email", "parentPhone", "gradeOrTrack", "status", "registrationFeesPaid", "tuitionFeesTotal", "academicTerm", "createdAt"]
+    },
+    "Picture": {
+      "title": "Picture",
+      "description": "An image upload record managed by the HotPic compliance rules (security_spec).",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique image identifier."
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the uploaded picture."
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional description."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "Direct hot-link URL to the image resource."
+        },
+        "uploaderId": {
+          "type": "string",
+          "description": "Authenticated user UID of the uploader."
+        },
+        "uploaderName": {
+          "type": "string",
+          "description": "Display name of the uploader."
+        },
+        "uploaderEmail": {
+          "type": "string",
+          "description": "Uploader email address."
+        },
+        "uploaderRole": {
+          "type": "string",
+          "description": "Role of the uploader (e.g. user, admin)."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "approved", "rejected"],
+          "description": "Approval status of the picture upload."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Uploader submission timestamp."
+        },
+        "likes": {
+          "type": "number",
+          "description": "Total count of singular likes."
+        },
+        "category": {
+          "type": "string",
+          "description": "Categorized section title."
+        }
+      },
+      "required": ["id", "title", "description", "imageUrl", "uploaderId", "uploaderName", "uploaderEmail", "uploaderRole", "status", "createdAt", "likes", "category"]
     }
   },
   "firestore": {
@@ -151,6 +209,10 @@
     "/students/{studentId}": {
       "schema": "StudentRecord",
       "description": "Registred student roster profiles managed securely by the principal."
+    },
+    "/pictures/{pictureId}": {
+      "schema": "Picture",
+      "description": "Image gallery collection audited by Zero-Trust rules defined in security_spec."
     }
   }
 }
