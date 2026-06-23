@@ -1,25 +1,22 @@
 import { Timestamp } from 'firebase/firestore';
 
-export interface Picture {
+export interface Announcement {
   id: string;
   title: string;
-  description: string;
-  imageUrl: string;
-  uploaderId: string;
-  uploaderName: string;
-  uploaderEmail: string;
-  uploaderRole: 'user' | 'admin';
-  status: 'pending' | 'approved' | 'rejected';
+  content: string;
+  imageUrl?: string;
+  category: string; // e.g. 'News', 'Event', 'TVET', 'Admission'
+  publisherName?: string;
+  publisherEmail: string;
   createdAt: Timestamp | string | number | any;
-  approvedBy?: string;
-  approvedAt?: Timestamp | string | number | any;
-  likes: number;
-  category: string;
 }
 
-export interface Like {
+export interface Inquiry {
   id: string;
-  userId: string;
-  pictureId: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  status: 'unread' | 'replied' | 'dismissed';
   createdAt: Timestamp | string | number | any;
 }

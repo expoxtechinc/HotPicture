@@ -13,13 +13,7 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isVerifiedUser() {
-      return request.auth != null && 
-             request.auth.token != null && 
-             request.auth.token.email != null;
-    }
-
-    // Bootstrapped Admin: Only user email luckyglobalnews@gmail.com is authorized as admin.
+    // Bootstrapped Admin: User email luckyglobalnews@gmail.com is authorized as admin
     function isAdmin() {
       return request.auth != null && 
              request.auth.token != null && 
@@ -38,114 +32,54 @@ service cloud.firestore {
       return resource.data;
     }
 
-    // --- CREATION SCHEMA VALIDATION FOR PICTURES ---
-    function isValidPictureCreate(data) {
-      return data.keys().hasAll([
-               'id', 'title', 'description', 'imageUrl', 'uploaderId', 
-               'uploaderName', 'uploaderEmail', 'uploaderRole', 'status', 
-               'createdAt', 'likes', 'category'
-             ]) &&
+    // --- ANNOUNCEMENTS RULES ---
+    function isValidAnnouncement(data) {
+      return data.keys().hasAll(['id', 'title', 'content', 'category', 'publisherEmail', 'createdAt']) &&
              data.id is string && data.id.size() <= 128 &&
-             data.title is string && data.title.size() >= 1 && data.title.size() <= 100 &&
-             data.description is string && data.description.size() <= 1000 &&
-             data.imageUrl is string && data.imageUrl.size() <= 2048 &&
-             data.uploaderId == request.auth.uid &&
-             data.createdAt == request.time &&
-             data.likes == 0 &&
-             data.category is string && data.category.size() <= 50 &&
-             (
-               (isAdmin() && data.uploaderRole == 'admin' && data.status == 'approved') ||
-               (!isAdmin() && data.uploaderRole == 'user' && data.status == 'pending')
-             );
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 150 &&
+             data.content is string && data.content.size() >= 1 && data.content.size() <= 5000 &&
+             data.category is string && data.category.size() >= 1 && data.category.size() <= 50 &&
+             data.publisherEmail == "luckyglobalnews@gmail.com" &&
+             data.createdAt == request.time;
     }
 
-    // --- UPDATE IMMUTABILITY VALIDATION FOR PICTURES ---
-    function isValidPictureUpdateState(ex, inc) {
-      return inc.id == ex.id &&
-             inc.title == ex.title &&
-             inc.description == ex.description &&
-             inc.imageUrl == ex.imageUrl &&
-             inc.uploaderId == ex.uploaderId &&
-             inc.uploaderEmail == ex.uploaderEmail &&
-             inc.uploaderRole == ex.uploaderRole &&
-             inc.createdAt == ex.createdAt &&
-             inc.category == ex.category;
+    match /announcements/{announcementId} {
+      // Anyone can browse announcements or list them
+      allow read: if true;
+
+      // Only administrators can write announcements
+      allow create: if isAdmin() && 
+                    isValidId(announcementId) && 
+                    announcementId == incoming().id && 
+                    isValidAnnouncement(incoming());
+
+      allow update: if isAdmin() && 
+                    isValidId(announcementId) && 
+                    isValidAnnouncement(incoming());
+
+      allow delete: if isAdmin();
     }
 
-    // --- PICTURES RULES ---
-    match /pictures/{pictureId} {
-      
-      // Read Operations:
-      // - Standard users and guests can view 'approved' pictures.
-      // - Standard signed-in users can also view their own uploads.
-      // - Admins can read (get/list) any picture (including pending and rejected ones).
-      allow get: if (existing().status == 'approved') || (
-        request.auth != null && (
-          existing().uploaderId == request.auth.uid || 
-          isAdmin()
-        )
-      );
+    // --- INQUIRIES RULES ---
+    function isValidInquiry(data) {
+      return data.keys().hasAll(['id', 'name', 'email', 'subject', 'message', 'status', 'createdAt']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
+             data.email is string && data.email.size() >= 1 && data.email.size() <= 100 &&
+             data.subject is string && data.subject.size() >= 1 && data.subject.size() <= 200 &&
+             data.message is string && data.message.size() >= 1 && data.message.size() <= 2000 &&
+             data.status in ['unread', 'replied', 'dismissed'] &&
+             data.createdAt == request.time;
+    }
 
-      // List query level protection (prevents wide table scraping).
-      allow list: if (resource.data.status == 'approved') || (
-        request.auth != null && (
-          resource.data.uploaderId == request.auth.uid || 
-          isAdmin()
-        )
-      );
+    match /inquiries/{inquiryId} {
+      // Parents can submit inquiries without being signed in (public write access)
+      allow create: if isValidId(inquiryId) && 
+                    inquiryId == incoming().id && 
+                    isValidInquiry(incoming());
 
-      // Create Operation:
-      allow create: if isVerifiedUser() && 
-                    isValidId(pictureId) && 
-                    pictureId == incoming().id && 
-                    isValidPictureCreate(incoming());
-
-      // Update Operation (Action-Based Tiered Updates):
-      allow update: if isVerifiedUser() && 
-                    isValidId(pictureId) && 
-                    isValidPictureUpdateState(existing(), incoming()) && 
-                    (
-                      // Action A: Incremental Sym-Like Action (any verified user can increment or decrement likes field by 1)
-                      (
-                        incoming().diff(existing()).affectedKeys().hasOnly(['likes']) && 
-                        (incoming().likes == existing().likes + 1 || incoming().likes == existing().likes - 1)
-                      ) ||
-                      
-                      // Action B: Admin Review Action (Status revision and moderator assignment)
-                      (
-                        isAdmin() && 
-                        incoming().diff(existing()).affectedKeys().hasOnly(['status', 'approvedBy', 'approvedAt']) &&
-                        (incoming().status == 'approved' || incoming().status == 'rejected') &&
-                        incoming().approvedBy == request.auth.uid &&
-                        incoming().approvedAt == request.time
-                      )
-                    );
-
-      // Delete Operation: allowed ONLY for the uploader themselves or the admin
-      allow delete: if isVerifiedUser() && (
-        existing().uploaderId == request.auth.uid || 
-        isAdmin()
-      );
-
-      // --- LIKES SUB-COLLECTION ---
-      // Tracks unique user likes for a picture document.
-      match /likes/{userId} {
-        allow get: if isSignedIn();
-        allow list: if isSignedIn();
-        
-        allow create: if isVerifiedUser() && 
-                      isValidId(userId) && 
-                      userId == request.auth.uid &&
-                      incoming().keys().hasAll(['id', 'userId', 'pictureId', 'createdAt']) &&
-                      incoming().keys().size() == 4 &&
-                      incoming().id == userId &&
-                      incoming().userId == request.auth.uid &&
-                      incoming().pictureId == pictureId &&
-                      incoming().createdAt == request.time;
-
-        allow delete: if isVerifiedUser() && 
-                      userId == request.auth.uid;
-      }
+      // Only authenticated admins can read, list, update or delete student queries and interest messages
+      allow read, update, delete: if isAdmin();
     }
   }
 }

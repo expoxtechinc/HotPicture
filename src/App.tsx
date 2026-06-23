@@ -3,10 +3,9 @@ import { db, auth, OperationType, handleFirestoreError } from './firebase';
 import { 
   collection, 
   query, 
-  where, 
   onSnapshot, 
   doc, 
-  getDocFromServer 
+  deleteDoc 
 } from 'firebase/firestore';
 import { 
   signInWithPopup, 
@@ -16,100 +15,68 @@ import {
   User 
 } from 'firebase/auth';
 import { 
-  Flame, 
-  LogOut, 
-  UploadCloud, 
-  LayoutGrid, 
-  ShieldAlert, 
-  Sparkles, 
+  School,
+  BookOpen, 
+  Award, 
+  Clock, 
+  Phone, 
+  Mail, 
   Search, 
-  Download, 
-  Plus, 
-  Globe, 
-  Compass, 
+  User as UserIcon, 
+  LogOut, 
+  Sparkles, 
   Heart, 
-  Loader2, 
-  Share2, 
-  ExternalLink,
-  Laptop,
-  Image as ImageIcon
+  Compass, 
+  MapPin, 
+  AlertCircle,
+  Megaphone,
+  Briefcase,
+  Star,
+  CheckCircle,
+  LogIn,
+  ChevronRight,
+  ShieldCheck,
+  CalendarDays
 } from 'lucide-react';
-import { Picture } from './types';
-import AddPicForm from './components/AddPicForm';
-import ModeratorQueue from './components/ModeratorQueue';
-import PicCard from './components/PicCard';
-import AuthModal from './components/AuthModal';
-import ShareManifestModal from './components/ShareManifestModal';
 
-// Categories matching standard aesthetic visual curation
-const CATEGORIES = [
-  'All', 
-  'Aesthetic', 
-  'Cyberpunk', 
-  'Minimalist', 
-  'Nature', 
-  'Street Art', 
-  'Abstract', 
-  'Retro'
-];
+import { Announcement } from './types';
+import { AcademicSelector } from './components/AcademicSelector';
+import { TvetTracksGrid } from './components/TvetTracksGrid';
+import { InquiryForm } from './components/InquiryForm';
+import { AnnouncementForm } from './components/AnnouncementForm';
+import { AdminInbox } from './components/AdminInbox';
 
-// Beautiful high-resolution premium initial default visual assets
-const LOCAL_SEED_POSTS: Picture[] = [
+// Seed stories so the application displays rich educational info even when database has no postings yet
+const FALLBACK_BUZZ_STORIES: Announcement[] = [
   {
-    id: 'seed-neon-tokyo',
-    title: 'Rainy Sidewalks in Neo-Tokyo Shinjuku District',
-    description: 'Electric cyan and violet glare reflecting effortlessly off the glistening asphalt. Shot with a vintage 50mm f/1.4 lens to emphasize local neon depth.',
-    imageUrl: 'https://images.unsplash.com/photo-1540959733332-eab4deceeaf7?w=800&auto=format&fit=crop',
-    uploaderId: 'curator-seed',
-    uploaderName: 'CyberCurator',
-    uploaderEmail: 'luckyglobalnews@gmail.com',
-    uploaderRole: 'admin',
-    status: 'approved',
-    createdAt: { seconds: 1782122458 },
-    likes: 42,
-    category: 'Cyberpunk'
+    id: 'seed-announcement-admissions',
+    title: 'Admissions Open: 2026/2027 Academic Year Registration',
+    content: 'Multee International School System is formally receiving registrations starting from nursery child care pathways through senior secondary science and humanities streams. We are dedicated to delivering affordable, top-quality instructions. High secondary standards are fully WAEC/WASSCE approved. Visit the admissions block today or submit a message below.',
+    category: 'Admission',
+    imageUrl: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=800&auto=format&fit=crop&q=60',
+    publisherName: 'Office of the Registrar',
+    publisherEmail: 'luckyglobalnews@gmail.com',
+    createdAt: new Date('2026-06-20T08:00:00Z')
   },
   {
-    id: 'seed-minimalist',
-    title: 'Sunlight Pathing Through Scandinavian Minimalist Lounge',
-    description: 'An study in natural geometry, neutral colors, wood grain, and warm organic negative space. Perfect inspiration for visual simplicity.',
-    imageUrl: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&auto=format&fit=crop',
-    uploaderId: 'curator-seed',
-    uploaderName: 'SpaceAesthetic',
-    uploaderEmail: 'luckyglobalnews@gmail.com',
-    uploaderRole: 'admin',
-    status: 'approved',
-    createdAt: { seconds: 1782112458 },
-    likes: 28,
-    category: 'Minimalist'
+    id: 'seed-announcement-tvet',
+    title: 'Saturday Practical Labs Added to 9 mos. T-VET Tracks',
+    content: 'In our commitment to workforce readiness, we are thrilled to announce that our 6 professional tracks (Tailoring, Hair Dressing, Beauty Care, Journalism, Computer Science, and Pastry Arts) have received state-of-the-art laboratory upgrades. This Saturday practical lab structure allows students to gain high-intensity hands-on experience before graduation and regional certifications.',
+    category: 'TVET',
+    imageUrl: 'https://images.unsplash.com/photo-1562774053-701939374585?w=800&auto=format&fit=crop&q=60',
+    publisherName: 'Vocational Coordinator',
+    publisherEmail: 'luckyglobalnews@gmail.com',
+    createdAt: new Date('2026-06-18T10:30:00Z')
   },
   {
-    id: 'seed-nature-glow',
-    title: 'Warm Alpenglow Coating Alpine Mountain Horizon',
-    description: 'Breathtaking light refraction across granite cliffs right at the turn of twilight. Taken during gold hour at high altitude.',
-    imageUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&auto=format&fit=crop',
-    uploaderId: 'curator-seed',
-    uploaderName: 'ApexVision',
-    uploaderEmail: 'luckyglobalnews@gmail.com',
-    uploaderRole: 'admin',
-    status: 'approved',
-    createdAt: { seconds: 1782102458 },
-    likes: 56,
-    category: 'Nature'
-  },
-  {
-    id: 'seed-abstract-fluid',
-    title: 'Pastel Fluid Dynamics and Swirling Paints',
-    description: 'Liquid acrylic exploration focusing on contrast gradients. Perfect aesthetic texture for desktop and mobile screen backgrounds.',
-    imageUrl: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800&auto=format&fit=crop',
-    uploaderId: 'curator-seed',
-    uploaderName: 'Chromatica',
-    uploaderEmail: 'luckyglobalnews@gmail.com',
-    uploaderRole: 'admin',
-    status: 'approved',
-    createdAt: { seconds: 1782092458 },
-    likes: 39,
-    category: 'Abstract'
+    id: 'seed-announcement-quizbowl',
+    title: 'Multee Intelligence Team Wins Regional Academic Quiz Bowl!',
+    content: 'Congratulations to our student representatives for their outstanding victory in the regional inter-school debate and quiz bowl championships! This represents the school’s persistent academic rigor and dedication to training future Liberian leaders who are analytical thinkers and proud representatives of the Johnsonville community.',
+    category: 'News',
+    imageUrl: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=60',
+    publisherName: 'Academic Council',
+    publisherEmail: 'luckyglobalnews@gmail.com',
+    createdAt: new Date('2026-06-15T09:15:00Z')
   }
 ];
 
@@ -117,82 +84,28 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [loginError, setLoginError] = useState<string | null>(null);
+
+  // Active Tab navigation system for sections
+  const [activeTab, setActiveTab] = useState<'home' | 'academics' | 'tvet' | 'buzz' | 'contact' | 'admin'>('home');
+
+  // School announcements lists
+  const [dbAnnouncements, setDbAnnouncements] = useState<Announcement[]>([]);
+  const [announcementsLoading, setAnnouncementsLoading] = useState(true);
   
-  // Real-time phone clock
-  const [currentTime, setCurrentTime] = useState('12:00 PM');
-  const [isProfileDrawerOpen, setIsProfileDrawerOpen] = useState(false);
-
-  useEffect(() => {
-    const updateTime = () => {
-      const d = new Date();
-      let hours = d.getHours();
-      const minutes = String(d.getMinutes()).padStart(2, '0');
-      const ampm = hours >= 12 ? 'PM' : 'AM';
-      hours = hours % 12 || 12;
-      setCurrentTime(`${hours}:${minutes} ${ampm}`);
-    };
-    updateTime();
-    const timer = setInterval(updateTime, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const [connectionVerified, setConnectionVerified] = useState(false);
-
-  // Handle Progressive Web App installation triggers
-  useEffect(() => {
-    const handleInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      console.log('PWA launch installer criteria fulfilled.');
-    };
-    window.addEventListener('beforeinstallprompt', handleInstallPrompt);
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleInstallPrompt);
-    };
-  }, []);
-
-  const handleTriggerInstall = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log('User response to app installer popup:', outcome);
-    setDeferredPrompt(null);
-  };
-
-  // Switch between smartphone simulator tabs
-  const [activeTab, setActiveTab] = useState<'gallery' | 'my-uploads' | 'admin-board' | 'upload'>('gallery');
-  const [approvedPics, setApprovedPics] = useState<Picture[]>([]);
-  const [myPics, setMyPics] = useState<Picture[]>([]);
-  const [picsLoading, setPicsLoading] = useState(false);
-
-  // Filters
+  // Search parameters for Multee Buzz
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
-  // Core Firebase Connection Test
-  useEffect(() => {
-    async function testConnection() {
-      try {
-        await getDocFromServer(doc(db, 'test', 'connection'));
-        setConnectionVerified(true);
-      } catch (error) {
-        if (error instanceof Error && error.message.includes('the client is offline')) {
-          console.error("Firebase response: App is working but client state is local.");
-        }
-      }
-    }
-    testConnection();
-  }, []);
+  // Inquiries count to show on admin tab badge
+  const [unreadInquiriesCount, setUnreadInquiriesCount] = useState(0);
 
-  // Monitor Auth Changes
+  // Monitor Auth State Changes
   useEffect(() => {
-    const unsubAuth = onAuthStateChanged(auth, (currentUser) => {
+    const unsub = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        // Administrator designated email
+        // Authenticate authorized school email as master principal
         const holdsAdminPrivileges = currentUser.email === 'luckyglobalnews@gmail.com';
         setIsAdmin(holdsAdminPrivileges);
       } else {
@@ -200,673 +113,767 @@ export default function App() {
       }
       setAuthLoading(false);
     });
-
-    return () => unsubAuth();
+    return () => unsub();
   }, []);
 
-  // Sync approved uploads reactively
+  // Sync announcements collection from Firestore reactively
   useEffect(() => {
-    setPicsLoading(true);
-
-    const approvedQuery = query(
-      collection(db, 'pictures'),
-      where('status', '==', 'approved')
-    );
-
-    const unsubApproved = onSnapshot(
-      approvedQuery,
+    setAnnouncementsLoading(true);
+    const annQuery = query(collection(db, 'announcements'));
+    const unsub = onSnapshot(
+      annQuery,
       (snapshot) => {
-        const list: Picture[] = [];
-        snapshot.forEach((doc) => {
-          list.push({ id: doc.id, ...doc.data() } as Picture);
+        const list: Announcement[] = [];
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          list.push({
+            id: docSnap.id,
+            title: data.title || '',
+            content: data.content || '',
+            category: data.category || 'News',
+            imageUrl: data.imageUrl,
+            publisherName: data.publisherName || 'Admissions',
+            publisherEmail: data.publisherEmail || '',
+            createdAt: data.createdAt,
+          });
         });
 
-        // Soft internal sort
+        // Date sorting descending
         list.sort((a, b) => {
-          const aTime = a.createdAt?.seconds || 0;
-          const bTime = b.createdAt?.seconds || 0;
+          const aTime = a.createdAt?.seconds 
+            ? a.createdAt.seconds 
+            : a.createdAt instanceof Date 
+              ? a.createdAt.getTime() / 1000 
+              : 0;
+          const bTime = b.createdAt?.seconds 
+            ? b.createdAt.seconds 
+            : b.createdAt instanceof Date 
+              ? b.createdAt.getTime() / 1000 
+              : 0;
           return bTime - aTime;
         });
 
-        setApprovedPics(list);
-        setPicsLoading(false);
+        setDbAnnouncements(list);
+        setAnnouncementsLoading(false);
       },
       (err) => {
-        handleFirestoreError(err, OperationType.LIST, 'pictures');
-        setPicsLoading(false);
+        handleFirestoreError(err, OperationType.LIST, 'announcements');
+        setAnnouncementsLoading(false);
       }
     );
 
-    return () => unsubApproved();
+    return () => unsub();
   }, []);
 
-  // Sync current user's uploads reactively
-  useEffect(() => {
-    if (!user) {
-      setMyPics([]);
-      return;
-    }
-
-    const myQuery = query(
-      collection(db, 'pictures'),
-      where('uploaderId', '==', user.uid)
-    );
-
-    const unsubMy = onSnapshot(
-      myQuery,
-      (snapshot) => {
-        const list: Picture[] = [];
-        snapshot.forEach((doc) => {
-          list.push({ id: doc.id, ...doc.data() } as Picture);
-        });
-
-        list.sort((a, b) => {
-          const aTime = a.createdAt?.seconds || 0;
-          const bTime = b.createdAt?.seconds || 0;
-          return bTime - aTime;
-        });
-
-        setMyPics(list);
-      },
-      (err) => {
-        handleFirestoreError(err, OperationType.LIST, 'pictures');
-      }
-    );
-
-    return () => unsubMy();
-  }, [user]);
-
-  const handleSignIn = async () => {
+  const handleSignInWithGoogle = async () => {
+    setLoginError(null);
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
     try {
       await signInWithPopup(auth, provider);
     } catch (err: any) {
-      console.error('Google Auth Failed:', err);
-      alert('Authentication popup canceled or failed to load.');
+      console.error('Auth Login failed:', err);
+      setLoginError('Could not establish connection to the auth server.');
     }
   };
 
-  const handleSignOut = async () => {
+  const handleSignOutSession = async () => {
     try {
       await signOut(auth);
-      setActiveTab('gallery');
+      setActiveTab('home');
     } catch (err) {
       console.error('Sign Out Failed:', err);
     }
   };
 
-  // Merge database items with premium seed uploads for an out-of-the-box breath-taking look
-  const getAllUnifiedPosts = () => {
-    const dbPosts = [...approvedPics];
-    const seededList = [...LOCAL_SEED_POSTS];
-    
-    const merged = [...dbPosts];
-    seededList.forEach(seed => {
-      if (!merged.some(p => p.title.toLowerCase() === seed.title.toLowerCase())) {
-        merged.push(seed);
+  const handleDeleteAnnouncement = async (id: string) => {
+    if (!window.confirm('Delete this announcement from the live school feed?')) {
+      return;
+    }
+    try {
+      await deleteDoc(doc(db, 'announcements', id));
+      setDbAnnouncements(prev => prev.filter(item => item.id !== id));
+    } catch (err: any) {
+      alert('Unauthorized removal.');
+      try {
+        handleFirestoreError(err, OperationType.DELETE, `announcements/${id}`);
+      } catch (log) {}
+    }
+  };
+
+  // Combine live database news updates with seed fallbacks so there is rich preset styling
+  const getUnifiedAnnouncements = () => {
+    const list = [...dbAnnouncements];
+    FALLBACK_BUZZ_STORIES.forEach((fallback) => {
+      // Avoid duplicating the seeds if there are identically titled entries
+      if (!list.some(item => item.title.toLowerCase() === fallback.title.toLowerCase())) {
+        list.push(fallback);
       }
     });
 
-    return merged.sort((a, b) => {
-      const aTime = a.createdAt?.seconds || 0;
-      const bTime = b.createdAt?.seconds || 0;
-      return bTime - aTime;
+    // Final sorting matching academic timing
+    return list.sort((a, b) => {
+      const getVal = (x: any) => {
+        if (x?.seconds) return x.seconds * 1000;
+        if (x instanceof Date) return x.getTime();
+        if (typeof x === 'string') return new Date(x).getTime();
+        return 0;
+      };
+      return getVal(b.createdAt) - getVal(a.createdAt);
     });
   };
 
-  const unifiedPosts = getAllUnifiedPosts();
+  const unifiedNewsFeed = getUnifiedAnnouncements();
 
-  // Perform multi-match client filter
-  const filteredPics = unifiedPosts.filter((pic) => {
+  // Perform search criteria match
+  const filteredBuzz = unifiedNewsFeed.filter((item) => {
     const matchesSearch = 
-      pic.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      pic.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      pic.uploaderName.toLowerCase().includes(searchQuery.toLowerCase());
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.publisherName && item.publisherName.toLowerCase().includes(searchQuery.toLowerCase()));
     
-    const matchesCategory = selectedCategory === 'All' || pic.category === selectedCategory;
-
+    const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
   return (
-    <div className="min-h-screen bg-[#07080a] text-slate-100 flex flex-col lg:flex-row items-center justify-center font-sans relative overflow-hidden selection:bg-orange-500 selection:text-white">
+    <div className="min-h-screen bg-[#fcfcf9] text-slate-800 flex flex-col font-sans selection:bg-blue-900 selection:text-white" id="main-app-container">
       
-      {/* Decorative ambient blurred orb flares */}
-      <div className="absolute top-1/4 left-1/4 -translate-y-1/2 -translate-x-1/2 w-96 h-96 bg-red-600/10 rounded-full blur-[140px] pointer-events-none hidden lg:block" />
-      <div className="absolute bottom-1/4 right-1/4 translate-y-1/2 translate-x-1/2 w-96 h-96 bg-orange-600/10 rounded-full blur-[140px] pointer-events-none hidden lg:block" />
-
-      {/* Hero Curated Info Column (Left side of widescreen viewports) */}
-      <div className="hidden lg:flex fixed left-8 xl:left-16 top-1/2 -translate-y-1/2 max-w-sm flex-col space-y-4 text-left z-10 overflow-y-auto max-h-[90vh] pr-2 scrollbar-none">
-        
-        {/* HotPic Primary Brand Identity */}
-        <div className="flex items-center space-x-3.5">
-          <div className="w-14 h-14 border-2 border-orange-500/40 rounded-2xl overflow-hidden p-0.5 shadow-xl bg-gray-950 flex items-center justify-center animate-pulse">
-            <Flame className="w-8 h-8 text-orange-500" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black tracking-tight leading-none text-slate-100 uppercase">
-              HotPic
-            </h1>
-            <span className="text-[10px] uppercase font-mono tracking-widest text-orange-400 font-black block mt-1">
-              Curated Art Collection
+      {/* Top micro-bar: quick contact and accreditation banner */}
+      <div className="bg-gradient-to-r from-slate-900 to-blue-950 text-white text-xs py-2 px-4 shadow-sm relative z-30 font-mono">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2">
+          <div className="flex flex-wrap items-center justify-center gap-4 text-[11px] text-slate-300">
+            <span className="flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5 text-amber-500" />
+              Greenland Community, Johnsonville, Liberia
+            </span>
+            <span className="flex items-center gap-1">
+              <Phone className="w-3.5 h-3.5 text-amber-500" />
+              +231 77 782 9659
             </span>
           </div>
-        </div>
-
-        {/* Narrative introduction description */}
-        <div className="space-y-2 text-xs text-slate-400 leading-relaxed">
-          <p>
-            Welcome to the ultimate community wallpaper collection dashboard. We gather and showcase <strong className="text-slate-200">cyberpunk neon scenery, minimalist aesthetic structures, fluid digital paint arts</strong>, and high-resolution captures.
-          </p>
-          <p>
-            Authentic visual items are processed through our multi-signature verification gateway. Sign in to contribute your unique captures, upload custom wallpapers, and upvote files.
-          </p>
-        </div>
-
-        {/* Curation checklist */}
-        <div className="p-4 bg-gray-950/80 border border-gray-901 rounded-2xl space-y-2 outline outline-1 outline-gray-900 shadow-md">
-          <h2 className="text-xs font-bold text-orange-400 uppercase tracking-wider flex items-center gap-1.5 font-mono">
-            <Compass size={12} className="text-orange-500" />
-            <span>Curatorial Guidelines</span>
-          </h2>
-          <p className="text-[11px] text-gray-500 leading-snug">
-            We actively seek high-contrast, beautiful art directions including:
-          </p>
-          <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 text-[10px] text-gray-400 font-mono">
-            <span className="flex items-center gap-1">🌃 Cyberpunk Streets</span>
-            <span className="flex items-center gap-1">🪵 Minimalist Rooms</span>
-            <span className="flex items-center gap-1">🏜️ Golden Hour Glow</span>
-            <span className="flex items-center gap-1">🎨 Fluid Gradients</span>
-            <span className="flex items-center gap-1">📸 Analogue Vintage</span>
-            <span className="flex items-center gap-1">🌾 Quiet Nature Scenic</span>
-          </div>
-        </div>
-
-        {/* Community stats */}
-        <div className="p-4 bg-gray-950/80 border border-gray-901 rounded-2xl space-y-2.5 outline outline-1 outline-gray-900">
-          <div className="flex justify-between items-center text-[11px]">
-            <span className="text-gray-400">Total Curators:</span>
-            <span className="text-slate-100 font-bold font-mono">Active Community</span>
-          </div>
-          <div className="flex justify-between items-center text-[11px] border-t border-gray-900 pt-2">
-            <span className="text-gray-400">Audit Response:</span>
-            <span className="text-emerald-400 font-bold font-mono flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live Server Sync
-            </span>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Moderation Safety Gate Statement (Right side of widescreen viewports) */}
-      <div className="hidden xl:flex fixed right-8 xl:right-16 top-1/2 -translate-y-1/2 max-w-xs flex-col space-y-4 text-left z-10">
-        <div className="p-5 bg-gray-950/40 backdrop-blur-md border border-gray-900 rounded-3xl space-y-3 shadow-xl">
-          <div className="flex items-center space-x-1.5 text-[10px] font-black text-orange-400 uppercase tracking-widest font-mono">
-            <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-            <span>Secure Gatekeeper</span>
-          </div>
-          <p className="text-[11px] text-gray-400 leading-relaxed">
-            All submitted images, captions, and links undergo automated review by our administrative curators. Submissions bypass queues once approved by registered moderators.
-          </p>
-          <div className="pt-2.5 border-t border-gray-900 flex items-center justify-between text-[9px] text-gray-500 font-mono">
-            <span>Server Version:</span>
-            <span className="text-orange-400 font-bold font-mono">HotPic v2.4</span>
-          </div>
-        </div>
-
-        {/* Install / Share prompt drawer trigger */}
-        <button 
-          onClick={() => setIsShareModalOpen(true)}
-          className="w-full py-2.5 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/20 hover:border-orange-500/40 text-[11px] font-bold rounded-xl transition duration-200 cursor-pointer text-orange-400 block text-center uppercase tracking-wider font-mono"
-        >
-          Add to Home Screen ➜
-        </button>
-      </div>
-
-      {/* Main Handheld Smartphone Mock Wrapper */}
-      <div className="w-full h-screen lg:h-[840px] lg:max-h-[92vh] lg:w-[410px] bg-[#090b0e] border-0 lg:border-[10px] lg:border-slate-800/90 lg:rounded-[50px] lg:shadow-[0_24px_70px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.05),0_0_40px_rgba(249,115,22,0.08)] relative overflow-hidden flex flex-col z-20">
-        
-        {/* Widescreen Camera lens physical notch indicator */}
-        <div className="hidden lg:block absolute top-3.5 left-1/2 -translate-x-1/2 w-28 h-5.5 bg-black rounded-full z-40 flex items-center justify-center">
-          <div className="w-2.5 h-2.5 rounded-full bg-[#141416] border border-gray-900 absolute left-3.5" />
-          <div className="w-1 h-1 rounded-full bg-slate-900 absolute right-7" />
-        </div>
-
-        {/* Native OS Simulator Top Bar */}
-        <div className="bg-[#090b0e] h-10 px-6 shrink-0 flex items-center justify-between text-[10px] font-sans font-bold tracking-wide select-none z-30 border-b border-gray-950/60">
-          <span className="text-slate-200">{currentTime}</span>
           
-          {/* Simulated space reserve for notch */}
-          <div className="hidden lg:block w-24" />
-
-          {/* Connection metrics */}
-          <div className="flex items-center space-x-1.5 text-slate-300">
-            <div className="flex items-end space-x-[1.5px]" title="WiFi Status">
-              <span className="w-[1.5px] h-1 bg-orange-400 rounded-px"></span>
-              <span className="w-[1.5px] h-1.5 bg-orange-400 rounded-px"></span>
-              <span className="w-[1.5px] h-2 bg-orange-400 rounded-px"></span>
-              <span className="w-[1.5px] h-2.5 bg-orange-500 rounded-px"></span>
-              <span className="w-[1.5px] h-3 bg-orange-500 rounded-px"></span>
-            </div>
-            <span className="text-[8px] font-mono tracking-tight text-orange-400 font-black">5G</span>
-            
-            <svg className="w-3.5 h-3.5 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8.251 14.228c2.073-2.073 5.425-2.073 7.498 0m-9.996-2.498c3.456-3.457 9.061-3.457 12.518 0M3.75 8.25c4.761-4.761 12.48-4.761 17.24 0M12 18.75h.008v.008H12v-.008z" />
-            </svg>
-
-            <div className="w-5 h-2.5 border border-slate-500 rounded-[3px] p-[1.5px] flex items-center relative">
-              <div className="h-full w-4/5 bg-gradient-to-r from-emerald-500 to-green-400 rounded-[1px]" />
-              <div className="w-[1px] h-1 bg-slate-500 rounded-r-xs absolute -right-[1.5px]" />
-            </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] uppercase font-bold text-amber-400 bg-white/10 px-2 py-0.5 rounded-sm">
+              Ministry Approved Code
+            </span>
+            <span className="text-slate-300 text-[11px]">Admission Cycle: 2026/2027</span>
           </div>
         </div>
+      </div>
 
-        {/* Compact Mobile App Header Bar */}
-        <header className="bg-[#0f1115]/90 backdrop-blur-md px-4 py-3 shrink-0 flex items-center justify-between border-b border-gray-900 z-30">
-          <div className="flex items-center space-x-2 cursor-pointer" onClick={() => setActiveTab('gallery')}>
-            <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center border border-orange-400/20 shadow">
-              <Flame className="w-4.5 h-4.5 text-white" />
+      {/* Main navigation Header */}
+      <header className="sticky top-0 bg-white/95 backdrop-blur-md border-b border-slate-100 py-4 px-6 relative z-20 shadow-xs">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-4">
+          
+          {/* Crest logo and Title */}
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('home')}>
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-900 to-blue-950 flex items-center justify-center text-amber-400 border border-slate-900 shadow-md">
+              <School className="w-7 h-7" />
             </div>
             <div>
-              <span className="text-sm font-black bg-gradient-to-r from-slate-100 to-orange-400 bg-clip-text text-transparent uppercase tracking-tight">
-                HotPic
-              </span>
-              <span className="text-[7.5px] text-orange-500 uppercase tracking-wider block leading-none font-bold">
-                Aesthetic Curation
-              </span>
+              <div className="flex items-center gap-1.5">
+                <h1 className="text-xl font-bold font-serif tracking-tight text-slate-950 uppercase leading-none">
+                  Multee International
+                </h1>
+                <span className="text-xs font-bold text-amber-600 bg-amber-50 border border-amber-100 px-1.5 py-0.5 rounded-sm uppercase tracking-widest">
+                  MISS
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 font-medium tracking-wide mt-1">
+                Registered &amp; Accredited Private Academic &amp; Vocational Center
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center space-x-1.5">
-            {/* Share action */}
-            <button 
-              onClick={() => setIsShareModalOpen(true)}
-              className="p-1.5 rounded-lg bg-gray-950 hover:bg-gray-900 border border-gray-900 text-orange-400 transition cursor-pointer"
-              title="Share Art App"
-            >
-              <Share2 size={13} />
-            </button>
-
-            {/* Profile Drawer and Auth Indicators */}
-            {authLoading ? (
-              <Loader2 className="w-4 h-4 text-orange-500 animate-spin" />
-            ) : user ? (
-              <button 
-                onClick={() => setIsProfileDrawerOpen(true)}
-                className="relative p-0.5 rounded-full border border-orange-500/40 focus:outline-none transition active:scale-95"
-                title="Creator Workspace"
+          {/* Desktop Navigation Links */}
+          <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2">
+            {[
+              { id: 'home', label: 'School Home' },
+              { id: 'academics', label: 'Academic Programs' },
+              { id: 'tvet', label: 'T-VET Vocational' },
+              { id: 'buzz', label: 'Multee Buzz (News)' },
+              { id: 'contact', label: 'Send Inquiry' }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`px-3 py-2 rounded-lg text-xs font-semibold cursor-pointer uppercase tracking-wider transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-blue-900 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-950 hover:bg-slate-50'
+                }`}
               >
-                {user.photoURL ? (
-                  <img src={user.photoURL} alt="Avatar" className="w-6 h-6 rounded-full" referrerPolicy="no-referrer" />
-                ) : (
-                  <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-orange-400 to-amber-500 text-white flex items-center justify-center text-[10px] font-bold uppercase">
-                    {user.email?.substring(0, 1)}
-                  </div>
-                )}
-                <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 border border-slate-950" />
+                {tab.label}
               </button>
+            ))}
+
+            {/* Admin toggle session item */}
+            {isAdmin && (
+              <button
+                onClick={() => setActiveTab('admin')}
+                className={`relative px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                  activeTab === 'admin'
+                    ? 'bg-amber-500 text-slate-950 font-extrabold shadow-sm'
+                    : 'text-amber-600 hover:bg-amber-50 hover:text-amber-800'
+                }`}
+              >
+                <span>🛡️ Admin panel</span>
+                {unreadInquiriesCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-650 text-white font-extrabold text-[8px] w-3.5 h-3.5 rounded-full flex items-center justify-center animate-bounce border border-white">
+                    {unreadInquiriesCount}
+                  </span>
+                )}
+              </button>
+            )}
+
+            {/* Login button indicator */}
+            {authLoading ? (
+              <div className="w-5 h-5 border-2 border-blue-900 border-t-transparent rounded-full animate-spin shrink-0 ml-2" />
+            ) : user ? (
+              <div className="flex items-center gap-2 pl-2 border-l border-slate-150 shrink-0">
+                <span className="text-[10px] font-mono text-slate-600 hidden sm:block">
+                  {user.email === 'luckyglobalnews@gmail.com' ? 'Welcome Principal' : user.displayName}
+                </span>
+                
+                <button
+                  onClick={handleSignOutSession}
+                  title="Sign Out Session"
+                  className="p-1.5 hover:bg-rose-50 text-slate-650 hover:text-rose-600 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-rose-100"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
             ) : (
               <button
-                onClick={() => setIsAuthModalOpen(true)}
-                className="px-2.5 py-1 bg-gradient-to-r from-orange-500 to-amber-500 rounded-lg text-[9px] font-bold text-white shadow-md cursor-pointer transition hover:scale-[1.02] active:scale-95"
+                onClick={handleSignInWithGoogle}
+                className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-lg transition-all border border-slate-200/60 cursor-pointer flex items-center gap-1"
               >
-                Sign In
+                <LogIn className="w-3.5 h-3.5 text-blue-900" />
+                <span>Sign In</span>
               </button>
             )}
           </div>
-        </header>
+        </div>
+      </header>
 
-        {/* Scrollable Main Container Area for Page Content */}
-        <main className="flex-1 overflow-y-auto scrollbar-none pb-24 bg-[#090b0e] flex flex-col">
-          
-          {/* Guest lock indicator */}
-          {!user && activeTab !== 'gallery' && (
-            <div className="px-5 py-12 text-center my-auto space-y-5">
-              <div className="w-16 h-16 bg-gradient-to-b from-gray-900 to-transparent border border-gray-800 rounded-full flex items-center justify-center mx-auto text-2xl shadow-lg">
-                🔒
-              </div>
-              <div className="space-y-1.5">
-                <h3 className="text-sm font-bold text-slate-100">Creation Workspace Locked</h3>
-                <p className="text-[11px] text-gray-500 leading-relaxed max-w-xs mx-auto">
-                  Aesthetes and photographers sign in to add visual layouts, save curated wallpapers, upvote uploads, or track private contributions.
+      {/* Main portal stage container */}
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-8 space-y-12">
+        
+        {/* Banner notifying if Google Admin view is active */}
+        {isAdmin && activeTab !== 'admin' && (
+          <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-2.5 shadow-3xs font-sans">
+            <div className="flex items-center gap-2.5">
+              <span className="p-2 bg-amber-100 text-amber-800 rounded-lg shrink-0">
+                <School className="w-5 h-5" />
+              </span>
+              <div>
+                <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider block">Administrator Recognized</span>
+                <p className="text-xs text-slate-700">
+                  Logged in as principal office coordinator. You can publish new announcements or review parent inbox letters.
                 </p>
               </div>
+            </div>
+
+            <div className="flex items-center gap-2">
               <button
-                onClick={() => setIsAuthModalOpen(true)}
-                className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl text-xs font-bold shadow-md shadow-orange-500/10 hover:scale-[1.01] active:scale-95 cursor-pointer transition"
+                onClick={() => setActiveTab('admin')}
+                className="px-4 py-1.5 bg-slate-900 text-white text-xs font-semibold rounded-lg hover:bg-slate-950 transition-colors cursor-pointer text-center shrink-0"
               >
-                Sign In / Sign Up
+                Go to Admin Inbox &amp; Post Form
+              </button>
+              <button
+                onClick={handleSignOutSession}
+                className="px-3.5 py-1.5 text-rose-700 hover:bg-rose-100/50 text-xs font-semibold rounded-lg transition-colors cursor-pointer text-center"
+              >
+                Sign Out
               </button>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Active Tab Area: Shared Art Stream */}
-          {activeTab === 'gallery' && (
-            <div className="p-4 space-y-4">
+        {/* PAGE SECTION: HOME TAB */}
+        {activeTab === 'home' && (
+          <div className="space-y-12">
+            
+            {/* Academic Hero block */}
+            <div className="relative rounded-3xl overflow-hidden academic-gradient text-white grid grid-cols-1 lg:grid-cols-12 gold-glow">
               
-              {/* HotPic Greeting Banner */}
-              <div className="p-3.5 bg-[#0f1115] border border-gray-905 rounded-2xl relative overflow-hidden space-y-1 shadow-sm outline outline-1 outline-gray-900">
-                <div className="flex items-center space-x-1 text-[10px] font-extrabold text-orange-400 uppercase tracking-widest leading-none font-mono">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>Curators feed dashboard</span>
+              {/* Left Column Information */}
+              <div className="lg:col-span-7 p-8 md:p-12 lg:p-16 flex flex-col justify-center space-y-6 relative z-10">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/20 text-amber-300 text-xs font-semibold rounded-full uppercase tracking-widest w-fit border border-amber-500/10">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Empowering Liberian Youths
                 </div>
-                <p className="text-[10px] text-gray-400 leading-relaxed">
-                  Browse high-contrast cyberpunk neon scenery, minimalist spacing, fluid pastel colors, and high-resolution vintage analog photographs.
+
+                <h2 className="text-3xl md:text-5xl lg:text-6xl font-serif font-black tracking-tight leading-tight">
+                  Empowering Youths with <span className="text-amber-400">Quality</span> Education
+                </h2>
+
+                <p className="text-xs md:text-sm text-slate-300 leading-relaxed max-w-xl">
+                  Multee International School System (MISS) is a premier private educational institution located in the Greenland Community of Johnsonville, Montserrado County, Liberia. Operating both academic classes and professional T-VET tracks, we focus on unlocking student potentials starting at the nursery phase up to skilled high school passings!
                 </p>
-                <div className="pt-2 flex items-center gap-2">
-                  <button 
-                    onClick={() => setIsShareModalOpen(true)}
-                    className="px-2.5 py-1 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/10 text-[9px] font-bold text-orange-400 rounded-lg flex items-center gap-1 shrink-0 cursor-pointer"
-                  >
-                    <Plus size={8} /> Add to Home Screen
-                  </button>
+
+                <div className="pt-4 flex flex-wrap items-center gap-3.5">
                   <button
-                    onClick={() => {
-                      if (!user) setIsAuthModalOpen(true);
-                      else setActiveTab('upload');
-                    }}
-                    className="px-2.5 py-1 bg-gray-900 hover:bg-gray-800 text-[9px] text-gray-400 hover:text-slate-200 border border-gray-800 rounded-lg flex items-center gap-1 shrink-0 cursor-pointer"
+                    onClick={() => setActiveTab('academics')}
+                    className="px-6 py-3 bg-amber-500 text-slate-950 text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-amber-400 transition-colors cursor-pointer flex items-center gap-1.5"
                   >
-                    <UploadCloud size={8} /> Share Photo
+                    Explore Academics
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('contact')}
+                    className="px-6 py-3 bg-white/10 text-white hover:bg-white/20 text-xs font-bold uppercase tracking-wider rounded-xl transition-colors cursor-pointer border border-white/10"
+                  >
+                    Send Registration inquiry
                   </button>
                 </div>
               </div>
 
-              {/* Slider for Categories */}
-              <div className="space-y-2">
-                <div className="flex items-center space-x-1.5 overflow-x-auto py-1 scrollbar-none">
-                  {CATEGORIES.map((cat) => (
+              {/* Right Column Visual Artwork */}
+              <div className="lg:col-span-5 relative min-h-[300px] lg:min-h-full overflow-hidden flex items-center justify-center p-8 bg-slate-950/20 border-l lg:border-l border-white/10">
+                <div className="absolute right-0 bottom-0 top-0 left-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/40 via-slate-900 to-slate-950 opacity-90 z-0"></div>
+                
+                {/* Stats Widget overlay */}
+                <div className="relative z-10 w-full max-w-sm bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md space-y-4">
+                  <div className="flex justify-between items-center border-b border-white/10 pb-3">
+                    <span className="text-xs font-semibold text-slate-300 flex items-center gap-1">
+                      <ShieldCheck className="w-3.5 h-3.5 text-amber-400" /> Ministry Accredited
+                    </span>
+                    <span className="text-[10px] font-mono text-amber-400 font-bold uppercase">Certified Portal</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-0.5 text-center p-3 bg-white/5 rounded-xl border border-white/5">
+                      <span className="text-2xl font-black text-amber-400 block font-serif">12 Yrs</span>
+                      <span className="text-[9.5px] text-slate-400 font-bold uppercase tracking-wider block">Full Grade Track</span>
+                    </div>
+
+                    <div className="space-y-0.5 text-center p-3 bg-white/5 rounded-xl border border-white/5">
+                      <span className="text-2xl font-black text-amber-400 block font-serif">9 Mos</span>
+                      <span className="text-[9.5px] text-slate-400 font-bold uppercase tracking-wider block">TVET Certification</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-amber-400/10 border border-amber-400/20 p-2.5 rounded-xl text-center">
+                    <span className="text-[10.5px] font-medium text-amber-200 block">
+                      Affordable Fees • Practical Learning Lab • WASSCE Approved
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Core School details segments */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              
+              <div className="p-6 bg-white border border-slate-100 rounded-2xl shadow-xs transition-shadow hover:shadow-xs">
+                <div className="p-3 bg-amber-50 text-amber-800 rounded-xl w-fit mb-4">
+                  <Award className="w-6 h-6" />
+                </div>
+                <h4 className="text-lg font-serif font-bold text-slate-900">Academic Excellence</h4>
+                <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                  With verified triumphs in regional quiz bowl meets and county-wide debate championships, MISS is celebrated for robust English literacy, mathematics, civics, and humanities instruction.
+                </p>
+              </div>
+
+              <div className="p-6 bg-white border border-slate-100 rounded-2xl shadow-xs transition-shadow hover:shadow-xs">
+                <div className="p-3 bg-blue-50 text-blue-800 rounded-xl w-fit mb-4">
+                  <Briefcase className="w-6 h-6" />
+                </div>
+                <h4 className="text-lg font-serif font-bold text-slate-900">6 Professional Tracks</h4>
+                <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                  Our professional T-VET division structures prepare youths directly for employment. Students gain accredited competencies in Computer Science, Tailoring, Pastry, Journalism, Beauty, and Dressing.
+                </p>
+              </div>
+
+              <div className="p-6 bg-white border border-slate-100 rounded-2xl shadow-xs transition-shadow hover:shadow-xs">
+                <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl w-fit mb-4">
+                  <CheckCircle className="w-6 h-6" />
+                </div>
+                <h4 className="text-lg font-serif font-bold text-slate-900">Affordable Tuition Rates</h4>
+                <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                  We believe that financial constraints should never lock potential. MISS provides highly affordable school fee schedules, cheap registration, and dynamic tuition options for the Greenland community.
+                </p>
+              </div>
+
+            </div>
+
+            {/* Mission Statement and curriculum highlight segment */}
+            <div className="p-8 bg-slate-50 rounded-2xl border border-slate-205/60 space-y-4">
+              <div className="flex items-center gap-1 bg-amber-100/50 text-amber-800 w-fit px-2 ml-0 py-0.5 rounded-md text-[10px] uppercase font-bold tracking-widest">
+                <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                Our Administrative Mandate
+              </div>
+              <h4 className="text-2xl font-serif font-bold text-slate-950">Curriculum Mission Statement</h4>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                Fostering affordable, high quality academic excellence and job-ready technical vocational fields. Multee International School System represents an outstanding training model in Montserrado County. Operating both Academic and Technical-Vocational divisions, we unlock student potentials starting at the nursery phase up to skilled high school qualifications.
+              </p>
+            </div>
+
+            {/* Micro division navigation shortcuts in bottom of home */}
+            <div className="bg-slate-900 text-white rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+              <div>
+                <h5 className="font-serif text-lg font-bold">Ready to enroll your child or apply for T-VET?</h5>
+                <p className="text-xs text-slate-400 mt-1">Our registrars are currently receiving letters and setting entrance consultations.</p>
+              </div>
+              <button
+                onClick={() => setActiveTab('contact')}
+                className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer shrink-0"
+              >
+                Send Administrative Inquiry →
+              </button>
+            </div>
+
+          </div>
+        )}
+
+        {/* PAGE SECTION: ACADEMICS TAB */}
+        {activeTab === 'academics' && (
+          <div className="space-y-6">
+            <div className="pb-4 border-b border-slate-100 text-center max-w-xl mx-auto space-y-2">
+              <h3 className="text-2xl sm:text-3xl font-serif font-bold text-slate-950">Kindergarten to High School Education</h3>
+              <p className="text-xs text-slate-500">
+                Operating high standards of core teaching structured around Liberian standards and international peer benchmarking.
+              </p>
+            </div>
+            <AcademicSelector />
+          </div>
+        )}
+
+        {/* PAGE SECTION: TVET VOCATIONAL TAB */}
+        {activeTab === 'tvet' && (
+          <div className="space-y-6">
+            <div className="pb-4 border-b border-slate-100 text-center max-w-xl mx-auto space-y-2">
+              <h3 className="text-2xl sm:text-3xl font-serif font-bold text-slate-950">Technical &amp; Vocational Training Track</h3>
+              <p className="text-xs text-slate-500">
+                Highly targeted 9-month professional certification tracks with Saturday labs preparing students for immediate employment.
+              </p>
+            </div>
+            <TvetTracksGrid />
+          </div>
+        )}
+
+        {/* PAGE SECTION: NEWS / BUZZ FEED TAB */}
+        {activeTab === 'buzz' && (
+          <div className="space-y-8" id="buzz-feed-section">
+            <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-slate-100 pb-6 gap-4">
+              <div>
+                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-blue-50 text-blue-700 text-xs font-semibold rounded-md border border-blue-100">
+                  <Megaphone className="w-3.5 h-3.5" />
+                  Multee Buzz Updates
+                </div>
+                <h3 className="text-2xl md:text-3xl font-serif font-bold text-slate-950 mt-1">
+                  News, Events &amp; Updates
+                </h3>
+                <p className="text-slate-500 text-sm mt-1 max-w-xl">
+                  Stay updated with academic timelines, tuition schedules, admissions, vocational graduation cycles, and general campus news.
+                </p>
+              </div>
+
+              {/* Feed Search control parameters */}
+              <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+                <div className="relative w-full sm:w-64">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search announcements..."
+                    className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-700"
+                  />
+                </div>
+
+                <div className="flex items-center gap-1.5 bg-slate-50 p-1 rounded-xl border border-slate-150">
+                  {['All', 'News', 'Admission', 'TVET', 'Event'].map((cat) => (
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
-                      className={`px-3 py-1.5 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
+                      className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider cursor-pointer ${
                         selectedCategory === cat
-                          ? 'bg-orange-500 text-white shadow-md shadow-orange-500/10'
-                          : 'bg-[#0f1115] border border-gray-900 text-gray-400 hover:text-slate-200'
+                          ? 'bg-blue-900 border-blue-950 text-white'
+                          : 'text-slate-505 text-slate-500 hover:text-slate-800'
                       }`}
                     >
                       {cat}
                     </button>
                   ))}
                 </div>
-
-                {/* Aesthetic Search Bar */}
-                <div className="relative w-full">
-                  <Search size={12} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
-                  <input
-                    type="text"
-                    placeholder="Search aesthetic focuses, artists, colors..."
-                    className="w-full bg-gray-950/80 border border-gray-900 rounded-xl pl-9 pr-4 py-2 text-[11px] text-slate-200 focus:outline-none focus:border-orange-500 placeholder:text-gray-600 transition"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              {/* Feed Grid representation */}
-              {picsLoading ? (
-                <div className="flex flex-col items-center justify-center py-20">
-                  <Loader2 className="w-7 h-7 text-orange-500 animate-spin mb-3" />
-                  <span className="text-[10px] font-mono text-gray-400">Syncing aesthetic boards...</span>
-                </div>
-              ) : filteredPics.length === 0 ? (
-                <div className="text-center py-16 bg-[#0f1115] border border-dashed border-gray-900 rounded-2xl">
-                  <span className="text-2xl block mb-2">🏜️</span>
-                  <p className="text-[11px] font-bold text-slate-400">No Captures Match Grid</p>
-                  <p className="text-[10px] text-gray-600 mt-1">Try choosing another tag or upload your own visuals!</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-3.5">
-                  {filteredPics.map((pic) => (
-                    <PicCard
-                      key={pic.id}
-                      pic={pic}
-                      currentUserUid={user ? user.uid : null}
-                      isAdmin={isAdmin}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Active Tab Area: User Submissions Tracking */}
-          {user && activeTab === 'my-uploads' && (
-            <div className="p-4 space-y-4">
-              <div className="border-b border-gray-900 pb-2">
-                <h3 className="text-xs font-black uppercase text-slate-300 tracking-wider">Your Aesthetic Submissions</h3>
-                <p className="text-[10px] text-gray-500 mt-0.5">
-                  Track approved posts and designs currently being audited by active moderators.
-                </p>
-              </div>
-
-              {myPics.length === 0 ? (
-                <div className="text-center py-12 bg-[#0f1115] border border-gray-900 rounded-2xl space-y-3">
-                  <p className="text-[11px] text-gray-500">You haven't uploaded any aesthetic pictures yet.</p>
-                  <button
-                    onClick={() => setActiveTab('upload')}
-                    className="bg-gray-900 hover:bg-gray-800 border border-gray-800 text-orange-400 px-4 py-1.5 rounded-lg text-[10px] font-bold transition cursor-pointer"
-                  >
-                    Submit First Post
-                  </button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-3.5">
-                  {myPics.map((pic) => (
-                    <PicCard
-                      key={pic.id}
-                      pic={pic}
-                      currentUserUid={user.uid}
-                      isAdmin={isAdmin}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Active Tab Area: Upload Panel */}
-          {user && activeTab === 'upload' && (
-            <div className="p-4 space-y-3">
-              <div className="text-center pb-2 border-b border-gray-900">
-                <h3 className="text-xs font-black uppercase text-slate-300 tracking-wider">Publish New Art Capture</h3>
-                <p className="text-[9.5px] text-gray-500 mt-0.5">
-                  Add custom photos, wallpapers, digital artwork configurations, or analog camera shots!
-                </p>
-              </div>
-              
-              <div className="bg-[#090b0e] rounded-xl font-sans">
-                <AddPicForm 
-                  user={user} 
-                  isAdmin={isAdmin} 
-                  onSuccess={() => {
-                    setTimeout(() => {
-                      setActiveTab(isAdmin ? 'gallery' : 'my-uploads');
-                    }, 1200);
-                  }}
-                />
               </div>
             </div>
-          )}
 
-          {/* Active Tab Area: Moderator Review Board */}
-          {user && isAdmin && activeTab === 'admin-board' && (
-            <div className="p-4 space-y-4">
-              <div className="border-b border-red-500/20 pb-2">
-                <div className="flex items-center space-x-1.5">
-                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-ping" />
-                  <h3 className="text-xs font-black uppercase text-red-500 tracking-wider">HotPic Audit Control panel</h3>
-                </div>
-                <p className="text-[10px] text-gray-500 mt-0.5">
-                  Moderator tools block. Confirm or deny public listings.
-                </p>
+            {/* Buzz update feed grid */}
+            {announcementsLoading ? (
+              <div className="text-center py-16 space-y-3">
+                <div className="w-8 h-8 border-4 border-blue-900 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                <p className="text-xs font-mono text-slate-400">Synchronizing update streams...</p>
               </div>
-              <ModeratorQueue adminUid={user.uid} />
-            </div>
-          )}
+            ) : filteredBuzz.length === 0 ? (
+              <div className="text-center py-16 bg-slate-50 border border-dashed border-slate-250 rounded-2xl">
+                <Megaphone className="w-12 h-12 text-slate-350 mx-auto mb-2" />
+                <p className="text-sm font-semibold text-slate-700">No updates found.</p>
+                <p className="text-xs text-slate-500 mt-1">Please check back later or modify your search terms.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {filteredBuzz.map((ann) => {
+                  const formattedDate = ann.createdAt?.seconds 
+                    ? new Date(ann.createdAt.seconds * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+                    : ann.createdAt instanceof Date 
+                      ? ann.createdAt.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+                      : 'Recently';
 
-        </main>
+                  return (
+                    <div
+                      key={ann.id}
+                      className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-xs flex flex-col card-shine"
+                    >
+                      {ann.imageUrl && (
+                        <div className="h-48 w-full overflow-hidden relative">
+                          <img
+                            src={ann.imageUrl}
+                            alt={ann.title}
+                            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                            referrerPolicy="no-referrer"
+                          />
+                          <span className="absolute top-4 left-4 bg-blue-900 text-white font-bold text-[10px] py-1 px-2.5 rounded-full uppercase tracking-wider">
+                            {ann.category}
+                          </span>
+                        </div>
+                      )}
 
-        {/* Bottom Smartphone Sticky Navigation Bar */}
-        <nav className="absolute bottom-0 left-0 right-0 bg-[#0f1115]/95 backdrop-blur-md border-t border-gray-900 px-3 py-1.5 z-30 flex items-center justify-around select-none">
-          
-          {/* Gallery Trigger */}
-          <button
-            onClick={() => setActiveTab('gallery')}
-            className={`flex flex-col items-center justify-center py-1 px-3.5 rounded-xl transition duration-150 relative cursor-pointer ${
-              activeTab === 'gallery' ? 'text-orange-400 font-bold' : 'text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            <LayoutGrid size={15} className="mb-0.5" />
-            <span className="text-[8.5px] tracking-tight">Gallery Feed</span>
-          </button>
+                      <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
+                        <div className="space-y-2">
+                          {!ann.imageUrl && (
+                            <span className="inline-block bg-slate-100 text-slate-700 font-bold text-[9px] py-0.5 px-2 rounded-md uppercase tracking-wider">
+                              {ann.category}
+                            </span>
+                          )}
+                          <h4 className="text-lg font-bold text-slate-900 leading-snug">
+                            {ann.title}
+                          </h4>
+                          <p className="text-xs text-slate-650 leading-relaxed line-clamp-4">
+                            {ann.content}
+                          </p>
+                        </div>
 
-          {/* Upload central accent key */}
-          <button
-            onClick={() => {
-              if (!user) {
-                setIsAuthModalOpen(true);
-              } else {
-                setActiveTab('upload');
-              }
-            }}
-            className={`flex flex-col items-center justify-center -translate-y-2 cursor-pointer w-11 h-11 rounded-full bg-gradient-to-r from-orange-400 to-amber-500 text-white font-bold transition shadow-lg shadow-orange-500/30 hover:scale-105 active:scale-95 z-40 ${
-              activeTab === 'upload' ? 'ring-2 ring-orange-400 ring-offset-2 ring-offset-[#0f1115]' : ''
-            }`}
-            title="Upload Photo"
-          >
-            <UploadCloud size={16} />
-          </button>
+                        <div className="pt-4 border-t border-slate-50 flex items-center justify-between text-xs text-slate-400">
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            <span className="font-medium text-slate-500">
+                              Published by {ann.publisherName || 'Admissions'}
+                            </span>
+                          </div>
+                          <span>{formattedDate}</span>
+                        </div>
+                      </div>
 
-          {/* My Submissions Trigger */}
-          <button
-            onClick={() => {
-              if (!user) {
-                setIsAuthModalOpen(true);
-              } else {
-                setActiveTab('my-uploads');
-              }
-            }}
-            className={`flex flex-col items-center justify-center py-1 px-3.5 rounded-xl transition duration-150 relative cursor-pointer ${
-              activeTab === 'my-uploads' ? 'text-orange-400 font-bold' : 'text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            <ImageIcon size={15} className="mb-0.5" />
-            <span className="text-[8.5px] tracking-tight">My Captures</span>
-            
-            {user && myPics.length > 0 && (
-              <span className="absolute top-0 right-2 bg-orange-500 text-white text-[8px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center border border-slate-950 scale-90 animate-pulse">
-                {myPics.length}
-              </span>
+                      {isAdmin && (
+                        <div className="bg-rose-50 px-6 py-2 flex justify-between items-center border-t border-rose-100">
+                          <span className="text-[10px] text-rose-800 font-bold font-mono">Principal Controls</span>
+                          <button
+                            onClick={() => handleDeleteAnnouncement(ann.id)}
+                            className="px-2.5 py-1 bg-white hover:bg-rose-100 text-[10px] font-bold text-rose-700 border border-rose-200 rounded-md cursor-pointer transition-colors"
+                          >
+                            Remove announcement
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             )}
-          </button>
-
-          {/* Moderator Queue button (staff/admin) */}
-          {isAdmin && (
-            <button
-              onClick={() => setActiveTab('admin-board')}
-              className={`flex flex-col items-center justify-center py-1 px-3.5 rounded-xl transition duration-150 relative cursor-pointer ${
-                activeTab === 'admin-board' ? 'text-red-400 font-bold' : 'text-slate-500 hover:text-red-400'
-              }`}
-            >
-              <ShieldAlert size={15} className="mb-0.5" />
-              <span className="text-[8.5px] tracking-tight">Mod Queue</span>
-            </button>
-          )}
-
-        </nav>
-
-        {/* Physical Home bar indicator */}
-        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-28 h-1 bg-gray-800 rounded-full z-45 pointer-events-none hidden lg:block" />
-
-        {/* Bottom Profile Settings drawer panel */}
-        {isProfileDrawerOpen && user && (
-          <div className="absolute inset-0 z-50 bg-black/70 backdrop-blur-sm flex flex-col justify-end animate-fade-in">
-            <div className="absolute inset-0 -z-10" onClick={() => setIsProfileDrawerOpen(false)} />
-            
-            <div className="w-full bg-[#0f1115] border-t border-gray-800 rounded-t-[32px] p-6 space-y-5 shadow-2xl relative">
-              
-              <div className="w-10 h-1 bg-gray-800 rounded-full mx-auto mb-1 pointer-events-none" />
-
-              {/* Profile card details */}
-              <div className="flex items-center space-x-3.5">
-                {user.photoURL ? (
-                  <img src={user.photoURL} alt="Avatar" className="w-12 h-12 rounded-full border-2 border-orange-500/20" referrerPolicy="no-referrer" />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-orange-400 to-amber-500 text-white flex items-center justify-center font-black text-sm uppercase font-mono">
-                    {user.email?.substring(0, 1)}
-                  </div>
-                )}
-                <div>
-                  <h4 className="text-sm font-bold text-slate-100">{user.displayName || 'Contributor'}</h4>
-                  <p className="text-[10px] text-gray-500">{user.email}</p>
-                </div>
-              </div>
-
-              {/* Quick stats items */}
-              <div className="grid grid-cols-2 gap-3 font-mono text-center">
-                <div className="p-3 bg-gray-950 rounded-2xl space-y-0.5 border border-gray-901">
-                  <span className="text-[10px] text-gray-500 uppercase block font-bold tracking-wider">Posts</span>
-                  <span className="text-lg font-black text-orange-400">{myPics.length} logs</span>
-                </div>
-                <div className="p-3 bg-gray-950 rounded-2xl space-y-0.5 border border-gray-901">
-                  <span className="text-[10px] text-gray-500 uppercase block font-bold tracking-wider">Role</span>
-                  <span className="text-xs font-bold text-slate-300 block pt-1 uppercase">
-                    {isAdmin ? '🛡️ Admin' : '✨ Creator'}
-                  </span>
-                </div>
-              </div>
-
-              {/* General Control triggers */}
-              <div className="space-y-2 pt-2">
-                
-                <button
-                  onClick={() => {
-                    setIsProfileDrawerOpen(false);
-                    setIsShareModalOpen(true);
-                  }}
-                  className="w-full py-2.5 px-4 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 rounded-xl text-xs font-semibold flex items-center justify-between transition cursor-pointer font-mono uppercase"
-                >
-                  <span>App Install Links</span>
-                  <span>➜</span>
-                </button>
-
-                <button
-                  onClick={async () => {
-                    setIsProfileDrawerOpen(false);
-                    await handleSignOut();
-                  }}
-                  className="w-full py-2.5 px-4 bg-transparent hover:bg-slate-900 border border-gray-900 text-gray-400 hover:text-rose-400 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 cursor-pointer"
-                >
-                  <LogOut size={13} />
-                  <span>Logout Curator Session</span>
-                </button>
-
-                <button
-                  onClick={() => setIsProfileDrawerOpen(false)}
-                  className="w-full py-2 px-4 bg-gray-950 hover:bg-gray-900 text-slate-400 text-[10.5px] rounded-xl text-center font-bold tracking-wide transition cursor-pointer"
-                >
-                  Dismiss Controls
-                </button>
-              </div>
-
-            </div>
           </div>
         )}
 
-      </div>
+        {/* PAGE SECTION: INQUIRY CONTACT FORM TAB */}
+        {activeTab === 'contact' && (
+          <div className="space-y-6">
+            <div className="pb-4 border-b border-slate-100 text-center max-w-xl mx-auto space-y-2">
+              <h3 className="text-2xl sm:text-3xl font-serif font-bold text-slate-950">Administrative Offices</h3>
+              <p className="text-xs text-slate-500">
+                Our helpful team stands ready to deliver registration requirements, admissions brochures, and tuition schedule details.
+              </p>
+            </div>
+            <InquiryForm />
+          </div>
+        )}
 
-      {/* Authentication and setup Modal */}
-      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+        {/* PAGE SECTION: STAFF ADMINISTRATOR WORKSPACE */}
+        {activeTab === 'admin' && (
+          <div className="space-y-8" id="admin-workspace-view">
+            
+            {/* Authenticated Workspace Check */}
+            {!user ? (
+              <div className="max-w-md mx-auto bg-white rounded-2xl border border-slate-100 p-8 text-center space-y-6 shadow-sm">
+                <div className="w-14 h-14 bg-amber-50 text-amber-700 rounded-full flex items-center justify-center mx-auto">
+                  <UserIcon className="w-8 h-8" />
+                </div>
 
-      {/* PWA asset share and setup Modal */}
-      <ShareManifestModal 
-        isOpen={isShareModalOpen} 
-        onClose={() => setIsShareModalOpen(false)} 
-        deferredPrompt={deferredPrompt}
-        onTriggerInstall={handleTriggerInstall}
-      />
+                <div className="space-y-2">
+                  <h4 className="text-xl font-serif font-bold text-slate-950">Principal Identity Gate</h4>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Access to this console requires secure credentials. Please sign in below using your authorized principal email.
+                  </p>
+                </div>
+
+                {loginError && (
+                  <div className="p-3 bg-rose-50 text-rose-800 border border-rose-100 rounded-xl text-xs flex items-center gap-1.5 justify-center">
+                    <AlertCircle className="w-4 h-4 text-rose-600" />
+                    <span>{loginError}</span>
+                  </div>
+                )}
+
+                <button
+                  onClick={handleSignInWithGoogle}
+                  className="w-full bg-blue-900 hover:bg-blue-950 text-white font-semibold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl cursor-pointer shadow-md flex items-center justify-center gap-2"
+                >
+                  <LogIn className="w-4 h-4 text-amber-400 font-extrabold" />
+                  <span>Authenticate Admin Account</span>
+                </button>
+              </div>
+            ) : !isAdmin ? (
+              <div className="max-w-md mx-auto bg-white rounded-2xl border border-slate-150 p-8 text-center space-y-5 shadow-xs">
+                <div className="p-3.5 bg-rose-50 text-rose-700 rounded-full w-14 h-14 flex items-center justify-center mx-auto border border-rose-100">
+                  <AlertCircle className="w-7 h-7" />
+                </div>
+
+                <div className="space-y-2">
+                  <h4 className="text-lg font-serif font-bold text-slate-900">Unauthorized Email Address</h4>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    You have successfully signed in as <strong className="text-slate-800 font-mono">{user.email}</strong>. However, this email does not possess administrative access privileges.
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleSignOutSession}
+                  className="px-5 py-2.5 bg-rose-600 text-white hover:bg-rose-700 text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+                >
+                  Sign Out and retry
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-12">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-amber-300 pb-4 gap-4">
+                  <div>
+                    <span className="text-[10px] uppercase font-bold tracking-widest text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-100 font-mono">
+                      Security Level 2 • verified principal
+                    </span>
+                    <h3 className="text-2xl sm:text-3xl font-serif font-black text-slate-950 mt-1">
+                      Multee Systems Management Console
+                    </h3>
+                  </div>
+
+                  <button
+                    onClick={handleSignOutSession}
+                    className="px-4 py-2 bg-slate-900 hover:bg-slate-950 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
+                  >
+                    <LogOut className="w-4 h-4 text-rose-400" />
+                    <span>Sign Out Session</span>
+                  </button>
+                </div>
+
+                {/* Sub-panels Grid: Form (Left) & Inbox Inquiries (Right) */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                  <div className="lg:col-span-6 space-y-6">
+                    <div className="bg-white border border-slate-100 p-6 rounded-2xl space-y-1 shadow-3xs">
+                      <h4 className="font-bold text-slate-900 text-sm">Welcome back, Principal administrator!</h4>
+                      <p className="text-xs text-slate-500">
+                        Use the form below to post urgent news alerts, picture galleries, tvet updates, and entrance exam notices onto the community board in real-time.
+                      </p>
+                    </div>
+
+                    <AnnouncementForm
+                      publisherEmail={user.email || 'luckyglobalnews@gmail.com'}
+                      onSuccess={(newAnn) => {
+                        // Success handled inside component.
+                        // Refresh or jump to buzz tab so admin can instantly view it!
+                        setTimeout(() => setActiveTab('buzz'), 1500);
+                      }}
+                    />
+                  </div>
+
+                  <div className="lg:col-span-6">
+                    <AdminInbox onInquiriesCount={(count) => setUnreadInquiriesCount(count)} />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+      </main>
+
+      {/* Unified institutional footer block */}
+      <footer className="bg-slate-950 text-white pt-12 pb-8 px-6 mt-16 border-t border-white/5 relative z-10 font-sans">
+        <div className="max-w-7xl mx-auto space-y-8">
+          
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-white/10 pb-8">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+                <span className="text-sm font-bold font-serif uppercase tracking-tight text-white">
+                  Multee International School System (MISS)
+                </span>
+              </div>
+              <p className="text-xs text-slate-400">
+                Greenland Community, Johnsonville, Montserrado County, Liberia
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-2 text-xs">
+              <span className="px-3 py-1 bg-white/5 rounded-full border border-white/5">
+                Affordable Fees
+              </span>
+              <span className="px-3 py-1 bg-white/5 rounded-full border border-white/5">
+                Practical Learning Lab
+              </span>
+              <span className="px-3 py-1 bg-white/5 rounded-full border border-white/5">
+                WAEC / WASSCE Approved
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 text-xs text-slate-400">
+            <div className="md:col-span-5 space-y-3">
+              <h5 className="text-white font-bold tracking-wider uppercase text-[10px]">About Our School</h5>
+              <p className="leading-relaxed">
+                Operating as both a distinguished academic division (from Nursery to 12th Grade) and a job-focused Technical &amp; Vocational Training program (T-VET tracks), we unlock student potentials starting at pre-childhood. We represent an outstanding academic training model in Montserrado County, Monrovia.
+              </p>
+            </div>
+
+            <div className="md:col-span-4 space-y-3">
+              <h5 className="text-white font-bold tracking-wider uppercase text-[10px]">Contact Registrar</h5>
+              <p className="leading-relaxed">
+                Registrar Office: +231 77 782 9659<br />
+                Admissions: multeeschoolsystem@gmail.com<br />
+                Mon - Fri 7:30 AM - 4:00 PM | Sat Labs 9:00 AM - 2:00 PM
+              </p>
+            </div>
+
+            <div className="md:col-span-3 space-y-3">
+              <h5 className="text-white font-bold tracking-wider uppercase text-[10px]">Accreditation</h5>
+              <p className="leading-relaxed">
+                Registered Private Academic &amp; Vocational Center under the official curriculum guidelines of the Ministry of Education, Liberia.
+              </p>
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4 text-center text-[11px] text-slate-500 font-mono">
+            <p>© 2026 Multee International School System (MISS). All rights reserved.</p>
+            <div className="flex gap-4">
+              <span className="hover:text-amber-400 transition-colors pointer-events-none">Montserrado County, Liberia</span>
+              <span className="text-slate-700">|</span>
+              <span className="hover:text-amber-400 transition-colors pointer-events-none">WAEC Code: Approved</span>
+            </div>
+          </div>
+
+        </div>
+      </footer>
     </div>
   );
 }

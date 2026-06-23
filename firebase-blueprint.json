@@ -1,104 +1,93 @@
 {
   "entities": {
-    "Picture": {
-      "title": "Picture",
-      "description": "An uploaded image post containing metadata, uploader info, and approval status.",
+    "Announcement": {
+      "title": "Announcement",
+      "description": "A school announcement, news update, or activity published by administrators.",
       "type": "object",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier of the picture document."
+          "description": "Unique identifier of the announcement document."
         },
         "title": {
           "type": "string",
-          "description": "Title of the uploaded picture."
+          "description": "Title or headline of the announcement."
         },
-        "description": {
+        "content": {
           "type": "string",
-          "description": "A description or story about the picture."
+          "description": "Detailed text body of the announcement."
         },
         "imageUrl": {
           "type": "string",
-          "description": "The URL of the displayed image, either external or from presets."
+          "description": "An optional external URL of an associated photo."
         },
-        "uploaderId": {
+        "category": {
           "type": "string",
-          "description": "The Firebase Auth UID of the uploader."
+          "description": "Category of update (e.g. News, Event, TVET, Admission)."
         },
-        "uploaderName": {
+        "publisherName": {
           "type": "string",
-          "description": "The name of the uploader."
+          "description": "Name of the administrator who published it."
         },
-        "uploaderEmail": {
+        "publisherEmail": {
           "type": "string",
-          "description": "The email of the uploader."
-        },
-        "uploaderRole": {
-          "type": "string",
-          "enum": ["user", "admin"],
-          "description": "Role of the uploader at the time of uploading."
-        },
-        "status": {
-          "type": "string",
-          "enum": ["pending", "approved", "rejected"],
-          "description": "Approval status of the picture. Admin uploads are pre-approved."
+          "description": "Email of the publishing administrator."
         },
         "createdAt": {
           "type": "string",
           "format": "date-time",
-          "description": "Timestamp when the picture was uploaded."
-        },
-        "approvedBy": {
-          "type": "string",
-          "description": "The UID of the admin who approved this picture."
-        },
-        "approvedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Timestamp when the picture was approved."
-        },
-        "likes": {
-          "type": "number",
-          "description": "Number of likes this picture has received."
-        },
-        "category": {
-          "type": "string",
-          "description": "Category tag of the picture (e.g. Nature, Travel, City, Abstract, Cyberpunk)."
+          "description": "Timestamp when the announcement was posted."
         }
       },
-      "required": ["id", "title", "imageUrl", "uploaderId", "uploaderEmail", "status", "createdAt", "likes"]
+      "required": ["id", "title", "content", "category", "publisherEmail", "createdAt"]
     },
-    "Like": {
-      "title": "Like",
-      "description": "Tracks which user liked which picture to prevent duplicate likes.",
+    "Inquiry": {
+      "title": "Inquiry",
+      "description": "An inquiry message filled out by a visitor in the contact form.",
       "type": "object",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Format: {userId}_{pictureId}"
+          "description": "Unique identifier of the inquiry."
         },
-        "userId": {
-          "type": "string"
+        "name": {
+          "type": "string",
+          "description": "Full name of the sender."
         },
-        "pictureId": {
-          "type": "string"
+        "email": {
+          "type": "string",
+          "description": "Email address of the sender."
+        },
+        "subject": {
+          "type": "string",
+          "description": "Inquiry subject line."
+        },
+        "message": {
+          "type": "string",
+          "description": "Body message text."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["unread", "replied", "dismissed"],
+          "description": "Admin review state of the message."
         },
         "createdAt": {
           "type": "string",
-          "format": "date-time"
+          "format": "date-time",
+          "description": "Timestamp when inquiry was submitted."
         }
       },
-      "required": ["id", "userId", "pictureId", "createdAt"]
+      "required": ["id", "name", "email", "subject", "message", "status", "createdAt"]
     }
   },
   "firestore": {
-    "/pictures/{pictureId}": {
-      "schema": "Picture",
-      "description": "The collection of uploaded pictures."
+    "/announcements/{announcementId}": {
+      "schema": "Announcement",
+      "description": "Collection of published school updates, news, and activities."
     },
-    "/pictures/{pictureId}/likes/{likeId}": {
-      "schema": "Like",
-      "description": "Tracks users who liked this picture."
+    "/inquiries/{inquiryId}": {
+      "schema": "Inquiry",
+      "description": "Visitor contact inquiries and school registration requests."
     }
   }
 }
